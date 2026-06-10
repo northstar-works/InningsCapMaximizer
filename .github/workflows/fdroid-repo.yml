@@ -1,10 +1,9 @@
-name: Publish F-Droid Repo
+﻿name: Publish F-Droid Repo
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -12,6 +11,7 @@ permissions:
 jobs:
   publish-fdroid:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,77 +20,73 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode signing keystore
-        shell: bash
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
-          test -n "$KEYSTORE_BASE64" || { echo "KEYSTORE_BASE64 is missing"; exit 1; }
-          echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
 
       - name: Build signed release APK
         env:
-          FANTAG_KEYSTORE_FILE: ${{ github.workspace }}/app/release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle assembleRelease --no-daemon
-
-      - name: Install fdroidserver
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fdroidserver
-
-      - name: Build F-Droid repository folder
-        shell: bash
-        env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          mkdir -p fdroid/repo fdroid/metadata
-          cp app/build/outputs/apk/release/app-release.apk fdroid/repo/InningsMax-${GITHUB_REF_NAME}.apk
-          cp app/release.keystore fdroid/fdroid.keystore
-          cat > fdroid/config.yml <<EOF2
-          repo_name: Innings Max
-          repo_description: Fantasy baseball innings-cap planner by North Star Labs.
-          repo_icon: icon.png
-          archive_older: 3
-          keystore: fdroid.keystore
-          repo_keyalias: ${KEY_ALIAS}
-          keystorepass: ${KEYSTORE_PASSWORD}
-          keypass: ${KEY_PASSWORD}
-          EOF2
-          cp app/src/main/assets/app_logo.png fdroid/icon.png
-          cat > fdroid/metadata/com.northstarlabs.inningsmax.yml <<EOF2
-          Categories:
-            - Sports & Health
-          License: Proprietary
-          AuthorName: North Star Labs
-          WebSite: https://fantag.sidneyshelton.com
-          SourceCode: https://github.com/${GITHUB_REPOSITORY}
-          IssueTracker: https://github.com/${GITHUB_REPOSITORY}/issues
-          Summary: Fantasy baseball innings-cap planner
-          Description: |-
-            Innings Max is an Android app for fantasy baseball innings-cap planning, SP/RP tradeoff decisions, and pre-Sunday strategy.
-          AutoName: Innings Max
-          Builds: []
-          EOF2
+          chmod +x ./gradlew || true
+          ./gradlew clean :app:assembleRelease \
+            -Pandroid.injected.signing.store.file="$PWD/release.keystore" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      - name: Locate release APK
+        id: apk
+        run: |
+          set -euo pipefail
+          echo "APK outputs:"
+          find app/build/outputs -type f -name "*.apk" -print || true
+          APK="$(find app/build/outputs -type f -name "*release*.apk" | head -n 1)"
+          if [ -z "$APK" ]; then
+            echo "No release APK found"
+            exit 1
+          fi
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+          mkdir -p fdroid/repo
+          cp "$APK" fdroid/repo/InningsCapMaximizer-v1.6.7-b32.apk
+
+      - name: Verify APK signature
+        run: |
+          set -euo pipefail
+          apksigner verify --verbose --print-certs "${{ steps.apk.outputs.apk }}"
+
+      - name: Build F-Droid repository folder
+        run: |
+          set -euo pipefail
           cd fdroid
-          fdroid update --create-metadata --pretty
-          rm -f fdroid.keystore config.yml
+          cat > repo/index.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Innings Cap Maximizer F-Droid Repo</title>
+            </head>
+            <body>
+              <h1>Innings Cap Maximizer</h1>
+              <p>Download the current APK:</p>
+              <p><a href="InningsCapMaximizer-v1.6.7-b32.apk">InningsCapMaximizer-v1.6.7-b32.apk</a></p>
+            </body>
+          </html>
+          HTML
 
       - name: Publish F-Droid repo to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./fdroid
-          keep_files: true
+          publish_branch: gh-pages
+          force_orphan: true
