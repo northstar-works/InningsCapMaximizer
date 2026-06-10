@@ -1,0 +1,101 @@
+name: Publish F-Droid Repo
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-fdroid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Decode signing keystore
+        run: |
+          set -euo pipefail
+          test -n "${{ secrets.KEYSTORE_BASE64 }}" || (echo "KEYSTORE_BASE64 is missing" && exit 1)
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+
+      - name: Build signed release APK
+        env:
+          INNINGS_KEYSTORE_FILE: ${{ github.workspace }}/release.keystore
+          INNINGS_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          INNINGS_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          INNINGS_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          gradle clean :app:assembleRelease
+
+      - name: Locate release APK
+        id: apk
+        run: |
+          set -euo pipefail
+          echo "APK outputs:"
+          find app/build/outputs -type f -name "*.apk" -print || true
+          APK="$(find app/build/outputs -type f -name "*release*.apk" | head -n 1)"
+          if [ -z "$APK" ]; then
+            echo "No release APK found"
+            exit 1
+          fi
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+          mkdir -p fdroid/repo
+          cp "$APK" fdroid/repo/InningsCapMaximizer-v1.6.7-b32.apk
+
+      - name: Verify APK signature
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [ -z "$APKSIGNER" ]; then
+            echo "apksigner not found under $ANDROID_HOME/build-tools"
+            find "$ANDROID_HOME" -type f -name apksigner -print || true
+            exit 1
+          fi
+          "$APKSIGNER" verify --verbose --print-certs "${{ steps.apk.outputs.apk }}"
+
+      - name: Build F-Droid repository folder
+        run: |
+          set -euo pipefail
+          cd fdroid
+          cat > repo/index.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Innings Cap Maximizer F-Droid Repo</title>
+            </head>
+            <body>
+              <h1>Innings Cap Maximizer</h1>
+              <p>Download the current APK:</p>
+              <p><a href="InningsCapMaximizer-v1.6.7-b32.apk">InningsCapMaximizer-v1.6.7-b32.apk</a></p>
+            </body>
+          </html>
+          HTML
+
+      - name: Publish F-Droid repo to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./fdroid
+          publish_branch: gh-pages
+          force_orphan: true
