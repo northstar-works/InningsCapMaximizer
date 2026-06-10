@@ -1,9 +1,10 @@
-﻿name: Android Release
+name: Android Release
 
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,31 +23,29 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.7
-        with:
-          gradle-version: 8.7
+          gradle-version: "8.7"
 
       - name: Create release keystore from secret
         run: |
           set -euo pipefail
+          test -n "${{ secrets.KEYSTORE_BASE64 }}" || (echo "KEYSTORE_BASE64 is missing" && exit 1)
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
 
       - name: Build signed release APK
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          INNINGS_KEYSTORE_FILE: ${{ github.workspace }}/release.keystore
+          INNINGS_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          INNINGS_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          INNINGS_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          chmod +x ./gradlew || true
-          ./gradlew clean :app:assembleRelease \
-            -Pandroid.injected.signing.store.file="$PWD/release.keystore" \
-            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
-            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
-            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          gradle clean :app:assembleRelease
 
       - name: Locate release APK
         id: apk
