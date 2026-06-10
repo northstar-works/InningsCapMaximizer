@@ -1,0 +1,603 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Innings Max</title>
+<style>
+:root{--bg:#07101e;--card:#101a2e;--card2:#15233a;--line:#2a3a58;--text:#f4f7fb;--muted:#aab4c7;--green:#23d18b;--orange:#ff9f43;--blue:#48a8ff;--red:#ff5b6b;--yellow:#ffd166;--safe-top:env(safe-area-inset-top,0px);--header-h:72px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}header{position:sticky;top:0;z-index:30;background:#07101e;border-bottom:1px solid var(--line);padding:calc(10px + var(--safe-top)) 12px 10px}h1{display:flex;align-items:center;gap:10px;margin:0;font-size:21px;flex-wrap:wrap}.logo{width:42px;height:42px;border-radius:10px}.sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.25}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-size:12px;margin:2px}.version{color:#8dccff}.green{color:var(--green)}.orange{color:var(--orange)}.blue{color:var(--blue)}.red{color:var(--red)}.yellow{color:var(--yellow)}.muted{color:var(--muted)}
+.nav{position:sticky;top:var(--header-h);z-index:29;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;background:#081324;padding:10px 12px;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}button,.tab,input,select{font:inherit;border-radius:10px;border:1px solid var(--line);background:#0b1528;color:var(--text);padding:8px}button{background:#1b2a45}.tab{white-space:nowrap;flex:0 0 auto}.tab.active,button.primary{background:#1268d6;border-color:#1268d6}.wrap{padding:12px;max-width:1200px;margin:auto}.page{display:none}.page.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}.card h2{font-size:18px;margin:0 0 10px}.grid{display:grid;gap:10px}.grid2,.grid3{grid-template-columns:1fr}@media(min-width:850px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr 1fr}}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}input{width:82px}.name{width:160px}.date{width:145px}.small{font-size:12px}.big{font-size:30px;font-weight:850}.rec{font-size:18px;font-weight:850}.bar{height:13px;background:#050b15;border:1px solid var(--line);border-radius:999px;overflow:hidden}.bar div{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));width:0%}.scroll{overflow:auto}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}td,th{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:left}th{color:var(--muted);font-weight:750}.right{text-align:right}.center{text-align:center}.wide{width:100%}.mini{width:68px}.plan-start{background:rgba(35,209,139,.09)}.plan-skip{background:rgba(255,159,67,.15)}.plan-maybe{background:rgba(72,168,255,.12)}.live{box-shadow:inset 4px 0 var(--red)}.final{opacity:.75}.badge{font-weight:800}.plan-start .badge{color:var(--green)}.plan-skip .badge{color:var(--orange)}.plan-maybe .badge{color:var(--blue)}.help{border-left:3px solid var(--blue);padding-left:9px;color:var(--muted)}textarea{width:100%;min-height:120px;background:#0b1528;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px}.nowrap{white-space:nowrap}
+
+.tradeoff-cards{display:grid;gap:10px}
+.tradeoff-scenario{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px}
+.tradeoff-scenario h3{margin:0 0 8px;font-size:16px}
+.tradeoff-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:8px}
+.tradeoff-kv .k{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
+.tradeoff-kv .v{font-size:15px;font-weight:750;line-height:1.25;word-break:break-word}
+.tradeoff-rec{font-size:13px;line-height:1.35;color:var(--text)}
+.tradeoff-table-wrap{display:none}
+@media(min-width:850px){.tradeoff-cards{display:none}.tradeoff-table-wrap{display:block}}
+
+
+.tradeoff-action-plan{margin-top:10px;display:grid;gap:10px}
+.rp-action-box{background:#0b1528;border:1px solid var(--line);border-radius:14px;padding:12px}
+.rp-action-box h3{margin:0 0 8px;font-size:15px}
+.rp-action-box p{margin:6px 0;line-height:1.35}
+.rp-window-grid{display:grid;gap:8px;margin-top:8px}
+.rp-window{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:10px}
+.rp-window-title{font-weight:850;margin-bottom:5px}
+.rp-window ul{margin:6px 0 0 18px;padding:0}
+.rp-window li{margin:3px 0}
+.dashboard-warning{border:1px solid var(--orange);background:rgba(255,159,67,.13);border-left:5px solid var(--orange);border-radius:16px;padding:12px;margin-bottom:12px;line-height:1.35}
+.dashboard-warning.ok{border-color:var(--green);border-left-color:var(--green);background:rgba(35,209,139,.10)}
+.dashboard-warning.danger{border-color:var(--red);border-left-color:var(--red);background:rgba(255,91,107,.12)}
+.dashboard-warning h2{font-size:17px;margin:0 0 6px}
+.dashboard-warning p{margin:5px 0}
+.dashboard-warning ul{margin:6px 0 0 18px;padding:0}
+.dashboard-warning li{margin:3px 0}
+
+
+.status-pill{display:inline-block;margin-top:6px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.04em}
+.live-pill{color:#d8ecff;border:1px solid var(--blue);background:rgba(72,168,255,.22)}
+.pending-pill{color:var(--muted);border:1px solid var(--line);background:rgba(255,255,255,.035)}
+.final-pill{color:var(--green);border:1px solid var(--green);background:rgba(35,209,139,.12)}
+#spTable tr.live{background:rgba(72,168,255,.18)!important;box-shadow:inset 7px 0 var(--blue)}
+#spTable tr.live select{border-color:var(--blue);box-shadow:0 0 0 2px rgba(72,168,255,.24)}
+#spTable tr.final{background:rgba(35,209,139,.075)!important;opacity:.82}
+#spTable tr:not(.live):not(.final).plan-start{background:rgba(35,209,139,.07)}
+
+</style>
+</head>
+<body>
+<header><h1><img src="app_logo.png" class="logo" alt="Innings Max logo"><span>Innings Max</span><span class="pill version">v1.6.7 b32</span></h1><div class="sub">Fantasy pitching cap planner — live 65+ Sunday overage strategy</div></header>
+<div class="nav"><button class="tab active" onclick="show('dash',this)">Dashboard</button><button class="tab" onclick="show('sp',this)">SP Plan</button><button class="tab" onclick="show('rp',this)">RP Plan</button><button class="tab" onclick="show('settings',this)">Settings</button></div>
+<div class="wrap">
+<section class="page active" id="dash">
+ <div id="dashWarning" class="dashboard-warning" style="display:none"></div>
+ <div class="grid grid3">
+  <div class="card"><h2>Live Current IP</h2><div class="row"><input id="currentIp" value="27.2" oninput="saveCalc('manual current IP')"><span class="muted">of</span><input id="capIp" value="65.0" oninput="saveCalc('cap change')"></div><div class="big" id="remainBig"></div><div class="bar"><div id="barFill"></div></div><div class="small muted" id="lastCalc"></div></div>
+  <div class="card"><h2>Projected Sunday SP Eligibility</h2><div class="small muted">Sunday-morning IP left: 0.5=1 SP • 5.5=2 • 10.5=3 • 15.5=4 • 20.5=5</div><div class="big" id="sunAllowed"></div><div class="small" id="thresholdMsg"></div></div>
+  <div class="card"><h2>Sunday Strategy Recommendation</h2><div class="rec" id="mainRec"></div><div class="small muted" id="mainWhy"></div></div>
+ </div>
+ <div class="card"><h2>Projected Path to Sunday</h2><table><tbody>
+  <tr><td>Pre-Sunday SP projected</td><td class="right" id="preSunSp"></td></tr>
+  <tr><td>Projected RP before Sunday <span class="muted small">(IP / Pts)</span></td><td class="right" id="preSunRp"></td></tr>
+  <tr><td>Sunday morning projected IP used</td><td class="right" id="sunUsed"></td></tr>
+  <tr><td>Sunday morning projected IP left</td><td class="right" id="sunLeft"></td></tr>
+  <tr><td>Sunday SP on roster</td><td class="right" id="sunNames"></td></tr>
+  <tr><td>Projected Sunday morning IP used</td><td class="right" id="finalTotal"></td></tr>
+  <tr><td>Projected Sunday morning cushion</td><td class="right" id="overUnder"></td></tr>
+ </tbody></table></div>
+ <div class="card" id="tradeoffCard"><h2 id="tradeoffTitle">RP vs Marginal Sunday SP Point Tradeoff</h2><div id="tradeoffSummary" class="small muted">Pull Fantag to calculate RP upside versus the marginal Sunday SP.</div><div id="tradeoffActionPlan" class="tradeoff-action-plan"></div><div id="tradeoffCards" class="tradeoff-cards" style="margin-top:8px"></div><div class="scroll tradeoff-table-wrap" style="margin-top:8px"><table id="tradeoffTable"><thead><tr><th>Scenario</th><th class="right">RP IP</th><th class="right">RP Pts</th><th class="right">SP Allowed</th><th class="right">Lost SP</th><th class="right">Net</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
+ <div class="grid grid2"><div class="card"><h2>What To Do Next</h2><div id="dayAdvice"></div></div><div class="card"><h2>RP / Pickup Watch</h2><div id="wiggle"></div><div class="small muted" style="margin-top:8px">Current IP already includes actual RP innings. Projected RP IP/points before Sunday are separate future risk only.</div></div></div>
+</section>
+<section class="page" id="sp"><div class="card"><h2>SP Plan</h2><div class="scroll"><table id="spTable"><thead><tr><th>Pitcher</th><th>Date</th><th>Status</th><th>Plan</th><th class="right">Est IP</th><th class="right">Est Pts</th><th class="right">Actual IP</th><th class="right">Actual Pts</th><th>Rec</th></tr></thead><tbody></tbody></table></div><div class="help small" style="margin-top:8px">Pending starters stay normal/green. LIVE SP rows turn blue and show LIVE NOW. Final SP rows fade/green and are removed from future projection math so they are not double-counted.</div></div></section>
+<section class="page" id="rp">
+ <div class="card"><h2>RP Plan — Named Relievers and Live Usage</h2><div class="help small">Each reliever needs a name, active checkbox, date/status, 10+ appearance average IP, usage probability, projected remaining IP, today IP, matchup total IP, and points. Fantag can fill this automatically; manual edits are saved and carried forward each day.</div></div>
+ <div class="card"><h2>RP Remaining-Matchup Forecast</h2><table><tbody><tr><td>Active RP projected remaining</td><td class="right" id="rpActiveTotal">-</td></tr><tr><td>All 4 RP pool projected remaining if rotated</td><td class="right" id="rpPoolTotal">-</td></tr><tr><td>RP innings already in matchup total</td><td class="right" id="rpMatchupActualTotal">-</td></tr><tr><td>Normal planning range rest of matchup</td><td class="right"><b>3.1–4.0 IP</b> normal / <b>5.0 IP</b> high</td></tr></tbody></table><div class="small muted" style="margin-top:8px">The app now treats Est Rem IP as remaining matchup innings, not just today's innings. Today IP is current-day only. Matchup IP and Matchup Pts are counted matchup totals only.</div></div><div class="card"><div class="row"><button class="primary" onclick="demoRp()">Demo-fill RP names/test data</button><button onclick="pullApi()">Pull Fantag Now</button><button onclick="resetRpForecast()">Reset RP forecast to 4.1 active / 4.9 pool</button><span class="muted small">Only the top 3 active RP count per day, but you can rotate the 4th on another day.</span></div></div>
+ <div class="card"><div class="scroll"><table id="rpTable"><thead><tr><th>RP Name</th><th>Active</th><th>Status</th><th>Date</th><th class="right">10+ App Avg IP</th><th class="right">Matchup IP</th><th class="right">Matchup Pts</th><th class="right">Use Prob %</th><th class="right">Est Rem IP</th><th class="right">Today IP</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+<section class="page" id="settings">
+ <div class="card"><h2>Live Data</h2><div class="row"><span>Fantag API URL</span><input class="wide" style="max-width:540px" id="apiUrl" placeholder="https://your-fantag-api/innings-cap"><button class="primary" onclick="pullApi()">Pull Now</button><button onclick="clearLocalAndPull()">Clear local cache + pull</button><label class="row"><input type="checkbox" id="autoRefresh" style="width:auto" onchange="toggleAuto()">Auto refresh</label><select id="refreshSec" onchange="saveOnly();toggleAuto(false)"><option>15</option><option>30</option><option selected>60</option><option>120</option><option>300</option></select><span>sec</span></div><pre class="small muted" id="apiMsg"></pre></div>
+ <div class="card"><h2>Matchup Window / Rollover</h2><div class="row"><span>Start</span><input class="date" type="date" id="matchupStart" onchange="saveWindowManual('window start')"><span>End</span><input class="date" type="date" id="matchupEnd" onchange="saveWindowManual('window end')"><span>Daily review time</span><input id="reviewTime" class="mini" value="23:00" onchange="saveOnly()"><button onclick="autoFillDates()">Auto-fill this matchup dates</button><button onclick="nextMatchup()">Prepare next Mon-Sun matchup</button></div><div id="windowInfo" class="small muted" style="margin-top:8px"></div></div>
+ <div class="card"><h2>API Payload Notes</h2><textarea readonly>{
+  "currentIp": "27.2",
+  "pitchers": [{"name":"Joe Ryan","date":"2026-06-05","status":"live|pending|final|postponed","plan":"start|maybe|skip","estIp":"6.1","estPts":62,"actualIp":"2.0","actualPts":18}],
+  "relievers": [{"name":"Closer Name","active":true,"slot":"P|RP|BE","counted":true,"date":"2026-06-05","status":"live|pending|final","todayIp":"0.1","matchupIp":"0.1","matchupPts":12,"actualPts":12}]
+}</textarea></div>
+</section>
+</div>
+<script>
+const VERSION='1.6.6 b31';
+const APP_BUILD='v1.6.6-b31';
+function qs(id){return document.getElementById(id)};function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));qs(id).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active')}
+function normDate(s){
+ if(!s)return'';
+ s=String(s).trim();
+ let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+ m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(m)return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+ let d=new Date(s); if(isNaN(d))return s; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addDays(s,n){let x=normDate(s).split('-').map(Number);let d=new Date(x[0],x[1]-1,x[2],12,0,0);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function dayLabel(s){if(!s)return'';let x=normDate(s).split('-').map(Number);let d=new Date(x[0],x[1]-1,x[2],12,0,0);return d.toLocaleDateString(undefined,{weekday:'short',month:'numeric',day:'numeric'})}function todayISO(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function firstVal(...vals){for(let v of vals){if(v!==undefined&&v!==null&&v!=='')return v}return''}
+function normalizeApiState(d){
+ let m=d.matchup||{};
+ let currentIp=firstVal(m.live_strategy_current_ip_used,m.current_strategy_ip_used,d.currentIp,d.current_ip,d.current_ip_used,m.current_ip_used,m.currentIp);
+ let matchupStart=firstVal(d.matchupStart,d.matchup_start,m.window_start,m.start);
+ let matchupEnd=firstVal(d.matchupEnd,d.matchup_end,m.window_end,m.end);
+ let spRows=Array.isArray(d.pitchers)?d.pitchers:(Array.isArray(d.sp)?d.sp:[]);
+ let rpRows=Array.isArray(d.relievers)?d.relievers:(Array.isArray(d.rp)?d.rp:[]);
+ return {currentIp,matchupStart,matchupEnd,spRows,rpRows,matchup:m,strategy:d.strategy||{},dashboard:d.dashboard||{},raw:d};
+}
+
+function asStr(v,def=''){let x=firstVal(v,def);return x===undefined||x===null?def:String(x)}
+function mapSpRow(x){
+ let actualIp=asStr(firstVal(x.actualIp,x.actual_ip,x.actualIP,'0.0'));
+ let confirmed=!!x.confirmed_finished_pitching;
+ let guarded=!!x.live_projection_guard;
+ let rawStatus=asStr(firstVal(x.status,'pending')).toLowerCase();
+ let status=confirmed?'final':((guarded&&ipToThirds(actualIp)>0)?'live':rawStatus);
+ return {name:asStr(firstVal(x.name,x.fullName),'SP'),date:normDate(firstVal(x.date,x.gameDate,x.nextGameDate)),status:status,rawStatus:rawStatus,plan:asStr(firstVal(x.plan,'maybe')).toLowerCase(),estIp:asStr(firstVal(x.estIp,x.estimated_ip,x.projectedIp,x.estimatedIp,'0.0')),estPts:asStr(firstVal(x.estPts,x.estimated_points,x.projectedPoints,x.estimatedPoints,'0')),actualIp:actualIp,actualPts:asStr(firstVal(x.actualPts,x.actual_points,x.points,'0')),slot:asStr(firstVal(x.slot,'')),counted:!!x.counted,liveProjectionGuard:guarded,confirmedFinishedPitching:confirmed,liveStatusNote:asStr(firstVal(x.live_status_note,''))}}
+
+function mapRpRow(x,i){
+ let rawStatus=asStr(firstVal(x.status,'pending')).toLowerCase();
+ let gameStatus=asStr(firstVal(x.game_status,x.gameStatus,x.abstractGameState,''));
+ let todayIp=asStr(firstVal(x.todayIp,x.today_ip,x.actualTodayIp,'0.0'));
+ let estIp=asStr(firstVal(x.estIp,x.estimated_remaining_ip,x.projectedIp,x.estimatedIp,'0.0'));
+ // Backend truth wins over old local/manual state. A final game with no IP is not pending.
+ let status=rawStatus;
+ if(rawStatus==='final_dnp'||rawStatus==='dnp'||rawStatus==='no_appearance') status='final_dnp';
+ else if(String(gameStatus).toLowerCase()==='final'&&ipToThirds(todayIp)===0&&ipToThirds(estIp)===0) status='final_dnp';
+ else if(String(gameStatus).toLowerCase()==='final') status='final';
+ return {name:asStr(firstVal(x.name,x.fullName,'RP '+(i+1))),active:x.active!==false,status:status,rawStatus:rawStatus,gameStatus:gameStatus,date:normDate(firstVal(x.date,x.gameDate,x.nextGameDate)),avgIp:asStr(firstVal(x.avgIp,x.ten_app_avg_ip,x.avgIpLast10,'1.0')),matchupPts:asStr(firstVal(x.matchupPts,x.matchup_points,x.matchupPoints,x.matchup_pts,x.actualPts,x.actual_points,x.points,'0')),useProb:asStr(firstVal(x.useProb,x.usageProbability,x.usage_probability,'0')),estIp:estIp,todayIp:todayIp,matchupIp:asStr(firstVal(x.matchupIp,x.matchup_ip,x.actualMatchupIp,'0.0')),actualPts:asStr(firstVal(x.actualPts,x.actual_points,x.points,'0')),slot:asStr(firstVal(x.slot,'')),counted:!!x.counted,action:asStr(firstVal(x.action,'')),strategyBasis:asStr(firstVal(x.strategy_basis,x.strategyBasis,''))}
+}
+function rowInLocalWindow(row){let dt=normDate(row&&row.date);return !!dt&&dt>=localWindowStart()&&dt<=localWindowEnd()}
+function apiWindowStaleForLocal(d){
+ let apiStart=normDate(d&&d.matchupStart), apiEnd=normDate(d&&d.matchupEnd);
+ let localStart=localWindowStart(), localEnd=localWindowEnd();
+ if(!localStart||!localEnd||!apiStart)return false;
+ return apiEnd&&apiEnd<localStart;
+}
+function resetRowsForNewWindow(reason){
+ let s=localWindowStart();
+ let e=localWindowEnd();
+ pitchers.forEach((p,i)=>{
+   p.date=(i<3?addDays(s,1):(i<5?addDays(s,3):addDays(s,5)));
+   if(p.date>e)p.date=e;
+   p.status='pending';
+   p.plan='maybe';
+   p.actualIp='';p.actualPts='';p.matchupPts='';p.liveProjectionGuard=false;p.confirmedFinishedPitching=false;p.liveStatusNote='';
+ });
+ relievers.forEach((r,i)=>{
+   r.date=addDays(s,1); if(r.date>e)r.date=s;
+   r.status='pending';r.rawStatus='pending';r.gameStatus='Scheduled';
+   r.todayIp='0.0';r.matchupIp='0.0';r.actualPts='';r.matchupPts='';
+   r.estIp=r.avgIp||'1.0';r.useProb=r.useProb&&r.useProb!=='0'?r.useProb:'40';
+   r.counted=!!r.active;r.action=r.active?'awaiting current matchup stats':'bench — not counted';r.strategyBasis='';
+ });
+ localStorage.setItem('spRows',JSON.stringify(pitchers));
+ localStorage.setItem('rpRows',JSON.stringify(relievers));
+}
+function applyApiRowsToLocal(d){
+ let staleApi=apiWindowStaleForLocal(d);
+ let mappedSp=Array.isArray(d.spRows)?d.spRows.map(mapSpRow):[];
+ let mappedRp=Array.isArray(d.rpRows)?d.rpRows.map(mapRpRow):[];
+ if(staleApi){
+   // Critical b31 guard: do not let prior-week API rows or prior-week matchup totals
+   // overwrite a prepared new matchup window. Keep the local next-week shell clean
+   // until the backend returns current-window rows/stats.
+   resetRowsForNewWindow('stale api ignored');
+   return {stale:true, appliedSp:0, appliedRp:0};
+ }
+ if(mappedSp.length){
+   let inWin=mappedSp.filter(rowInLocalWindow);
+   pitchers=(inWin.length?inWin:mappedSp).map(p=>{
+     if(!rowInLocalWindow(p)){p.status='pending';p.plan='maybe';p.actualIp='';p.actualPts='';p.matchupPts=''}
+     if(String(p.status||'').toLowerCase()==='pending'&&!p.plan)p.plan='maybe';
+     return p;
+   });
+ }
+ if(mappedRp.length){
+   let inWin=mappedRp.filter(rowInLocalWindow);
+   relievers=(inWin.length?inWin:mappedRp).map(r=>{
+     if(!rowInLocalWindow(r)){r.status='pending';r.gameStatus='Scheduled';r.todayIp='0.0';r.matchupIp='0.0';r.actualPts='';r.matchupPts='';r.estIp=r.avgIp||'1.0';r.action=r.active?'awaiting current matchup stats':'bench — not counted'}
+     return r;
+   });
+ }
+ localStorage.setItem('spRows',JSON.stringify(pitchers));
+ localStorage.setItem('rpRows',JSON.stringify(relievers));
+ return {stale:false, appliedSp:mappedSp.length, appliedRp:mappedRp.length};
+}
+function samplePullText(){let sp=pitchers.find(x=>x.name&&x.name.includes('Messick'))||pitchers[0]||{};let rp=relievers[0]||{};return ` — sample SP: ${sp.name||'none'} ${sp.status||''} ${sp.actualIp||'0.0'} / sample RP: ${rp.name||'none'} ${rp.status||''} ${rp.todayIp||'0.0'}`}
+
+function ipToThirds(v){if(v===undefined||v===null||v==='')return 0;let s=String(v).trim();let neg=s.startsWith('-');if(neg)s=s.slice(1);let [a,b='0']=s.split('.');let whole=parseInt(a||'0',10);let frac=parseInt((b||'0')[0]||'0',10);if(frac>2)frac=2;let x=whole*3+frac;return neg?-x:x}function thirdsToIp(t){let neg=t<0;t=Math.abs(Math.round(t));return (neg?'-':'')+Math.floor(t/3)+'.'+(t%3)}
+const monday=(()=>{let d=new Date();let day=d.getDay();let diff=d.getDate()-day+(day===0?-6:1);d.setDate(diff);return d.toISOString().slice(0,10)})();
+let pitchers=[{name:'Joe Ryan',date:addDays(monday,5),status:'pending',plan:'start',estIp:'6.1',estPts:'58',actualIp:'',actualPts:'',matchupPts:''},{name:'Parker Messick',date:addDays(monday,4),status:'pending',plan:'start',estIp:'5.1',estPts:'46',actualIp:'',actualPts:'',matchupPts:''},{name:'Michael Wacha',date:addDays(monday,4),status:'pending',plan:'start',estIp:'5.2',estPts:'43',actualIp:'',actualPts:'',matchupPts:''},{name:'Christian Scott',date:addDays(monday,4),status:'pending',plan:'start',estIp:'5.0',estPts:'38',actualIp:'',actualPts:'',matchupPts:''},{name:'Reid Detmers',date:addDays(monday,4),status:'pending',plan:'skip',estIp:'5.0',estPts:'35',actualIp:'',actualPts:'',matchupPts:''},{name:'Cam Schlittler',date:addDays(monday,6),status:'pending',plan:'start',estIp:'5.2',estPts:'52',actualIp:'',actualPts:'',matchupPts:''},{name:'Michael Soroka',date:addDays(monday,6),status:'pending',plan:'maybe',estIp:'5.1',estPts:'42',actualIp:'',actualPts:'',matchupPts:''}];
+let relievers=[{name:'Enter RP 1 name / Fantag fill',active:true,status:'pending',date:addDays(monday,4),avgIp:'1.0',useProb:'55',estIp:'1.2',todayIp:'0.0',matchupIp:'0.0',actualPts:'',matchupPts:''},{name:'Enter RP 2 name / Fantag fill',active:true,status:'pending',date:addDays(monday,4),avgIp:'1.0',useProb:'45',estIp:'1.1',todayIp:'0.0',matchupIp:'0.0',actualPts:'',matchupPts:''},{name:'Enter RP 3 name / Fantag fill',active:true,status:'pending',date:addDays(monday,4),avgIp:'0.2',useProb:'40',estIp:'1.0',todayIp:'0.0',matchupIp:'0.0',actualPts:'',matchupPts:''},{name:'Enter RP 4 name / Fantag fill',active:false,status:'pending',date:addDays(monday,4),avgIp:'1.0',useProb:'30',estIp:'0.8',todayIp:'0.0',matchupIp:'0.0',actualPts:'',matchupPts:''}];
+let apiState=null;
+function load(){
+ let previousBuild=localStorage.getItem('appBuild')||'';
+ let buildChanged=previousBuild!==APP_BUILD;
+ if(buildChanged){
+   // Android WebView localStorage survives APK updates. Clear cached API/roster/manual IP
+   // so a new APK cannot display stale strategy values from an older build.
+   ['apiState','spRows','rpRows','currentIp','capIp','decisionSnapshot'].forEach(k=>localStorage.removeItem(k));
+   localStorage.setItem('appBuild',APP_BUILD);
+ }
+ let a=localStorage.getItem('apiState');if(a)try{apiState=JSON.parse(a)}catch(e){}
+ let p=localStorage.getItem('spRows'),r=localStorage.getItem('rpRows');if(p)try{pitchers=JSON.parse(p)}catch(e){}if(r)try{relievers=JSON.parse(r)}catch(e){}
+ if(apiState&&(apiState.spRows?.length||apiState.rpRows?.length)){applyApiRowsToLocal(apiState)}
+ ['currentIp','capIp','apiUrl','refreshSec','matchupStart','matchupEnd','reviewTime'].forEach(id=>{let v=localStorage.getItem(id);if(v!==null&&qs(id))qs(id).value=v});
+ if(!qs('capIp').value)qs('capIp').value='65.0';
+ if(!qs('matchupStart').value)qs('matchupStart').value=monday;if(!qs('matchupEnd').value)qs('matchupEnd').value=addDays(qs('matchupStart').value,6);
+ qs('autoRefresh').checked=localStorage.getItem('autoRefresh')==='1';render();calc(buildChanged?'updated build; stale cache cleared':'opened');toggleAuto(false);
+ if(qs('apiUrl').value.trim()){setTimeout(()=>pullApi(),300)}
+}
+function saveOnly(){['currentIp','capIp','apiUrl','refreshSec','matchupStart','matchupEnd','reviewTime'].forEach(id=>{if(qs(id))localStorage.setItem(id,qs(id).value)});localStorage.setItem('autoRefresh',qs('autoRefresh').checked?'1':'0');localStorage.setItem('spRows',JSON.stringify(pitchers));localStorage.setItem('rpRows',JSON.stringify(relievers))}
+function saveCalc(reason){saveOnly();render();calc(reason)}
+function saveWindowManual(reason){localStorage.setItem('matchupWindowManual','1');saveCalc(reason)}
+function hasManualWindow(){return localStorage.getItem('matchupWindowManual')==='1'}
+function clearManualWindow(){localStorage.removeItem('matchupWindowManual')}
+function localWindowStart(){return normDate(qs('matchupStart').value)}
+function localWindowEnd(){return normDate(qs('matchupEnd').value)}
+function isSunday(d){return new Date(normDate(d)+'T12:00:00').getDay()===0}function inWindow(d){let x=normDate(d);return x>=qs('matchupStart').value&&x<=qs('matchupEnd').value}
+function finalLikeStatus(s){return ['final','final_dnp','dnp','no_appearance','postponed','cancelled'].includes(String(s||'').toLowerCase())}
+function futureRow(x){return inWindow(x.date)&&!finalLikeStatus(x.status)}function activeRpRows(){return relievers.filter(r=>r.active).sort((a,b)=>Number(b.useProb||0)-Number(a.useProb||0)).slice(0,3)}function allowed(rem){if(rem>=ipToThirds('20.5'))return 5;if(rem>=ipToThirds('15.5'))return 4;if(rem>=ipToThirds('10.5'))return 3;if(rem>=ipToThirds('5.5'))return 2;if(rem>=ipToThirds('0.5'))return 1;return 0}
+function isRelevantUnfinishedRow(x,isRp){let d=normDate(x.date);if(!d||d<localWindowStart()||d>localWindowEnd())return false;if(isRp&&!x.active)return false;if(!isRp&&String(x.plan||'').toLowerCase()==='skip')return false;return !finalLikeStatus(x.status)}
+function shouldAutoRollover(){let end=localWindowEnd();if(!end)return false;let today=todayISO();if(today<end)return false;let unfinishedSp=pitchers.filter(x=>isRelevantUnfinishedRow(x,false));let unfinishedRp=relievers.filter(x=>isRelevantUnfinishedRow(x,true));if(today>end)return true;return unfinishedSp.length===0&&unfinishedRp.length===0}
+function maybeAutoRollover(reason){if(!shouldAutoRollover())return false;let oldStart=localWindowStart(),oldEnd=localWindowEnd();nextMatchup(true);qs('apiMsg').textContent=(qs('apiMsg').textContent||'')+` — auto-rolled matchup ${oldStart} through ${oldEnd} to ${localWindowStart()} through ${localWindowEnd()} after final rostered rows cleared`;return true}
+function statusBadge(status){
+ let s=String(status||'pending').toLowerCase();
+ let finalLike=s==='final'||s==='final_dnp'||s==='dnp'||s==='no_appearance';
+ let cls=s==='live'?'status-pill live-pill':(finalLike?'status-pill final-pill':'status-pill pending-pill');
+ let label=s==='live'?'LIVE NOW':(s==='final_dnp'?'FINAL DNP':(finalLike?'FINAL':'PENDING'));
+ return `<span class="${cls}">${label}</span>`;
+}
+function render(){let tb=qs('spTable').querySelector('tbody');tb.innerHTML='';pitchers.forEach((p,i)=>{let tr=document.createElement('tr');tr.className='plan-'+p.plan+(p.status==='live'?' live':'')+(p.status==='final'?' final':'');tr.innerHTML=`<td><input class="name" value="${p.name}" oninput="pitchers[${i}].name=this.value;saveOnly()">${statusBadge(p.status)}${p.liveStatusNote?`<div class="small blue">${p.liveStatusNote}</div>`:''}</td><td><input class="date" type="date" value="${normDate(p.date)}" onchange="pitchers[${i}].date=this.value;saveCalc('SP date')"><div class="small muted">${dayLabel(p.date)}</div></td><td><select onchange="pitchers[${i}].status=this.value;saveCalc('SP status')">${['pending','live','final','postponed'].map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><select onchange="pitchers[${i}].plan=this.value;saveCalc('SP plan')">${['start','maybe','skip'].map(s=>`<option ${p.plan===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="right"><input class="mini" value="${p.estIp}" oninput="pitchers[${i}].estIp=this.value;saveCalc('SP est IP')"></td><td class="right"><input class="mini" value="${p.estPts}" oninput="pitchers[${i}].estPts=this.value;saveOnly()"></td><td class="right"><input class="mini" value="${p.actualIp||''}" oninput="pitchers[${i}].actualIp=this.value;saveCalc('SP actual IP')"></td><td class="right"><input class="mini" value="${p.actualPts||''}" oninput="pitchers[${i}].actualPts=this.value;saveOnly()"></td><td><span class="badge">${p.plan.toUpperCase()}</span></td>`;tb.appendChild(tr)});
+let rb=qs('rpTable').querySelector('tbody');rb.innerHTML='';relievers.forEach((r,i)=>{let tr=document.createElement('tr');let action=rpAction(r);let finalLike=['final','final_dnp','dnp','no_appearance'].includes(String(r.status||'').toLowerCase());tr.className=(r.status==='live'?'live ':'')+(finalLike?'final ':'')+(r.active?'plan-start':'plan-skip');tr.innerHTML=`<td><input class="name" value="${r.name}" oninput="relievers[${i}].name=this.value;saveOnly()"></td><td class="center"><input type="checkbox" style="width:auto" ${r.active?'checked':''} onchange="relievers[${i}].active=this.checked;saveCalc('RP active')"></td><td><select onchange="relievers[${i}].status=this.value;saveCalc('RP status')">${['pending','live','final','final_dnp','postponed'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}</select>${r.gameStatus?`<div class="small muted">MLB: ${r.gameStatus}</div>`:''}${r.strategyBasis?`<div class="small muted">${r.strategyBasis.replaceAll('_',' ')}</div>`:''}</td><td><input class="date" type="date" value="${normDate(r.date)}" onchange="relievers[${i}].date=this.value;saveCalc('RP date')"><div class="small muted">${dayLabel(r.date)}</div></td><td class="right"><input class="mini" value="${r.avgIp}" oninput="relievers[${i}].avgIp=this.value;saveCalc('RP avg')"></td><td class="right"><input class="mini" value="${r.matchupIp}" oninput="relievers[${i}].matchupIp=this.value;saveCalc('RP matchup')"></td><td class="right"><input class="mini" value="${r.matchupPts||r.actualPts||''}" oninput="relievers[${i}].matchupPts=this.value;saveOnly()"></td><td class="right"><input class="mini" value="${r.useProb}" oninput="relievers[${i}].useProb=this.value;saveCalc('RP prob')"></td><td class="right"><input class="mini" value="${r.estIp}" oninput="relievers[${i}].estIp=this.value;saveCalc('RP est rem')"></td><td class="right"><input class="mini" value="${r.todayIp}" oninput="relievers[${i}].todayIp=this.value;saveCalc('RP today')"></td><td><span class="${action.cls}">${action.txt}</span></td>`;rb.appendChild(tr)})}
+function updateRpSummary(){let active=activeRpRows().filter(futureRow).reduce((sum,r)=>sum+ipToThirds(r.estIp),0);let pool=relievers.filter(futureRow).reduce((sum,r)=>sum+ipToThirds(r.estIp),0);let actual=relievers.reduce((sum,r)=>sum+ipToThirds(r.matchupIp),0);if(qs('rpActiveTotal'))qs('rpActiveTotal').textContent=thirdsToIp(active)+' IP';if(qs('rpPoolTotal'))qs('rpPoolTotal').textContent=thirdsToIp(pool)+' IP';if(qs('rpMatchupActualTotal'))qs('rpMatchupActualTotal').textContent=thirdsToIp(actual)+' IP';}
+function rpAction(r){let s=String(r.status||'').toLowerCase();if(s==='final_dnp'||s==='dnp'||s==='no_appearance')return{txt:(r.action||'final — did not pitch today'),cls:'yellow'};if(r.counted)return{txt:(r.action&&r.action!=='counted in matchup'?r.action:'counted'),cls:'green'};if(!r.active)return{txt:(r.action|| (r.slot==='BE'?'bench — not counted':'bench')),cls:'orange'};if(s==='final')return{txt:(r.action||'final — no projected IP left'),cls:'yellow'};if(s==='live')return{txt:(r.action||'live counting'),cls:'red'};let t=totals();if(t.sunLeft<ipToThirds('5.5'))return{txt:'bench to protect 2 SP',cls:'orange'};if(t.sunLeft<ipToThirds('10.5'))return{txt:'use carefully',cls:'yellow'};return{txt:'active OK',cls:'green'}}
+function totals(){let current=ipToThirds(qs('currentIp').value),cap=ipToThirds(qs('capIp').value);let preSp=0,sunSp=0,sun=[];pitchers.forEach(p=>{if(p.plan==='skip'||!futureRow(p))return;let ip=ipToThirds(p.actualIp||p.estIp);if(isSunday(p.date)){sunSp+=ip;sun.push(p.name+(p.plan==='maybe'?'?':''))}else preSp+=ip});let active=activeRpRows().filter(futureRow);let preRp=0,sunRp=0;active.forEach(r=>{let ip=ipToThirds(r.todayIp||r.estIp);if(isSunday(r.date))sunRp+=ip;else preRp+=ip});let used=current+preSp+preRp,left=cap-used;return{current,cap,preSp,preRp,sunRp,sunSp,sun,used,sunLeft:left,allow:allowed(left),final:used+sunSp+sunRp}}
+
+function sumIpList(list,key){return (list||[]).reduce((a,x)=>a+ipToThirds(x[key]||'0.0'),0)}
+function apiProjected(){return apiState&&apiState.matchup&&apiState.matchup.projected_remaining_entering_sunday!==undefined}
+function apiPickupsText(){let m=(apiState&&apiState.matchup)||{};let sun=m.sunday_sp_on_roster||[];let names=sun.map(x=>x.name+(x.plan==='maybe'?'?':'')).join(', ')||'none';let pickups=Number(m.suggested_sunday_pickups||0);return pickups>0?`${names} — consider ${pickups} extra Sunday SP pickup${pickups>1?'s':''}`:names}
+function recommendationClass(allowed){if(allowed>=3)return 'blue';if(allowed===2)return 'green';if(allowed===1)return 'orange';return 'red'}
+function cleanAdvice(txt){return String(txt||'').replace(/\s*Skipped SP, including Detmers, are shown for awareness but are not counted\./g,'').replace(/\s*Skipped SP such as Detmers are shown for awareness but are not counted\./g,'').replace(/\s*Bench RP are shown but are not counted\./g,'').replace(/\s*Only active RP with actual innings count\./g,'').replace(/\s+/g,' ').trim()}
+function spFloorForAllowed(n){let floors=['0.0','0.5','5.5','10.5','15.5','20.5'];return floors[Math.max(0,Math.min(5,Number(n)||0))]||'0.0'}
+
+function apiStrategySummary(m){
+ let allowed=apiSpOnlyAllowed(m), used=apiSpOnlyUsed(m), left=apiSpOnlyLeft(m), rp=apiRpProjected(m), usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowRp=apiWithRpAllowed(m);
+ let liveUsed=apiLiveUsed(m), liveLeft=apiLiveLeft(m), offUsed=apiOfficialUsed(m), offLeft=apiOfficialLeft(m);
+ let sun=m.sunday_sp_on_roster||[];
+ let sunTxt=sun.length?sun.map(x=>x.name).join(', '):'no Sunday SP listed';
+ let pickupCount=Number(m.suggested_sunday_pickups||0);
+ let pickupTxt=pickupCount>0?` Need ${pickupCount} more Sunday starter${pickupCount>1?'s':''} if matchup quality is good.`:' No extra Sunday pickup is required by the current projection.';
+ let rpTxt=ipToThirds(rp)>0?` Active RP forecast adds ${rp} IP, moving the Sunday forecast to ${usedRp} used / ${leftRp} left, still ${allowRp} SP eligible.`:' No active RP innings are projected before Sunday.';
+ let verdict=allowRp<allowed?` Warning: active RP forecast drops Sunday eligibility from ${allowed} SP to ${allowRp} SP.`:` Recommendation: keep the ${allowRp} Sunday SP plan; active RP projection is currently acceptable.`;
+ return `Live current reality is ${liveUsed} used / ${liveLeft} left. ESPN start reference only is ${offUsed} used / ${offLeft} left. SP-only Sunday forecast is ${used} used / ${left} left, which supports ${allowed} Sunday SP. Sunday SP listed: ${sunTxt}.${pickupTxt}${rpTxt} ${verdict}`;
+}
+function preSunText(list){return (list&&list.length)?list.map(x=>`${x.name} ${x.estimated_ip||''}`).join(', '):'0.0'}
+
+function apiField(m,...keys){for(let k of keys){let v=m&&m[k];if(v!==undefined&&v!==null&&v!=='')return String(v)}return ''}
+function apiRpProjected(m){return apiField(m,'active_rp_projected_before_sunday','active_rp_projected_before_sunday_ip','activeRpProjectedBeforeSunday')||'0.0'}
+function apiRpProjectedPts(m){let v=apiField(m,'active_rp_projected_points_before_sunday','projected_rp_points_before_sunday','activeRpProjectedPointsBeforeSunday');return v===undefined||v===null||v===''?'0.0':String(v)}
+function rpIpPtsText(ip,pts){let p=String(pts||'0.0');return `${ip} IP / ${p} pts`}
+function apiSpOnlyUsed(m){return apiField(m,'projected_ip_used_entering_sunday_sp_only','projected_ip_used_entering_sunday')||'0.0'}
+function apiSpOnlyLeft(m){return apiField(m,'projected_remaining_entering_sunday_sp_only','projected_remaining_entering_sunday')||'0.0'}
+function apiSpOnlyAllowed(m){return Number(apiField(m,'projected_sunday_sp_allowed_sp_only','projected_sunday_sp_allowed')||0)}
+function apiWithRpUsed(m){return apiField(m,'projected_ip_used_entering_sunday_with_rp')||apiSpOnlyUsed(m)}
+function apiWithRpLeft(m){return apiField(m,'projected_remaining_entering_sunday_with_rp')||apiSpOnlyLeft(m)}
+function apiWithRpAllowed(m){return Number(apiField(m,'projected_sunday_sp_allowed_with_rp','projected_sunday_sp_allowed')||0)}
+function apiLiveUsed(m){return apiField(m,'live_strategy_current_ip_used','current_strategy_ip_used','strategy_current_ip_used')||apiField(m,'current_ip_used','currentIp')||'0.0'}
+function apiLiveLeft(m){return apiField(m,'live_strategy_current_remaining_ip','current_strategy_remaining_ip','strategy_current_remaining_ip')||apiField(m,'remaining_ip')||'0.0'}
+function apiOfficialUsed(m){return apiField(m,'official_current_ip_used','current_ip_used','currentIp')||'0.0'}
+function apiOfficialLeft(m){return apiField(m,'official_remaining_ip','remaining_ip')||'0.0'}
+function apiRealityNote(m){let live=apiLiveLeft(m), official=apiOfficialLeft(m), used=apiLiveUsed(m), offUsed=apiOfficialUsed(m);return `Live reality: ${used} used / ${live} left. ESPN start reference: ${offUsed} used / ${official} left.`}
+
+function addRefreshParams(url){let u=new URL(url,window.location.href);u.searchParams.set('force_refresh','true');u.searchParams.set('refresh_ttl_sec','30');if(qs('matchupStart')&&qs('matchupStart').value)u.searchParams.set('matchup_start',qs('matchupStart').value);if(qs('matchupEnd')&&qs('matchupEnd').value)u.searchParams.set('matchup_end',qs('matchupEnd').value);return u.toString()}
+
+
+
+function syncStickyOffsets(){let h=document.querySelector('header');if(h)document.documentElement.style.setProperty('--header-h',h.offsetHeight+'px')}
+function ordinal(n){n=Number(n||0);if(!n)return'';let m10=n%10,m100=n%100;if(m10===1&&m100!==11)return n+'st';if(m10===2&&m100!==12)return n+'nd';if(m10===3&&m100!==13)return n+'rd';return n+'th'}
+function tradeoffOrdinalSlot(){let m=(apiState&&apiState.matchup)||{};return Number(m.projected_sunday_sp_allowed_sp_only??m.projected_sunday_sp_allowed??0)}
+function tradeoffTitleText(){let slot=tradeoffOrdinalSlot();return slot>0?'RP vs '+ordinal(slot)+' SP Point Tradeoff':'RP vs Marginal Sunday SP Point Tradeoff'}
+
+function tradeoffData(){
+ if(!apiState)return null;
+ let raw=apiState.raw||{}, m=apiState.matchup||{};
+ return m.rp_vs_sp_tradeoff || raw.rp_vs_sp_tradeoff || (raw.strategy&&raw.strategy.rp_vs_sp_tradeoff) || null;
+}
+function fmtNum(x){let n=Number(x);return isFinite(n)?(Math.round(n*10)/10).toString():(x??'')}
+
+function namesList(arr){return (arr||[]).filter(Boolean).join(', ')}
+function rpNameLine(r){return `${r.name||'RP'}${r.team?' ('+r.team+')':''}${r.game_time?' — '+r.game_time:''}`}
+function firstLaterWindow(lockGroups){
+  let groups=lockGroups||[];
+  for(let i=1;i<groups.length;i++){
+    let rps=groups[i].rps||[];
+    if(rps.length)return {group:groups[i],rp:rps[0]};
+  }
+  return null;
+}
+function renderTradeoffActionPlan(t){
+  let box=qs('tradeoffActionPlan');
+  if(!box)return;
+  box.innerHTML='';
+  if(!t)return;
+  let keep=filterActiveRpNames(t.keep_active||t.keep_if_risk_ok||[]);
+  let bench=filterActiveRpNames(t.bench_first||[]);
+  let groups=t.lock_groups||t.staggered_decision_plan||[];
+  let later=firstLaterWindow(groups);
+  let mode=t.stagger_mode||'';
+  let note=t.stagger_note||'';
+  let action=document.createElement('div');
+  action.className='rp-action-box';
+  let keepText=keep.length?`<span class="green"><b>Keep active:</b> ${namesList(keep)}</span>`:'<span class="muted"><b>Keep active:</b> no active RP recommended yet</span>';
+  let benchText=bench.length?`<span class="orange"><b>Bench / do not activate:</b> ${namesList(bench)}</span>`:'<span class="green"><b>Bench:</b> none required by current active RP projection</span>';
+  let laterText=later?`<p class="blue"><b>Next decision:</b> Re-check before <b>${rpNameLine(later.rp)}</b>. Earlier RP result window should clear before this later start.</p>`:'';
+  action.innerHTML=`<h3>Recommended RP Action</h3><p>${keepText}</p><p>${benchText}</p>${laterText}<p class="muted"><b>Stagger status:</b> ${mode?mode.replaceAll('_',' '):'unknown'}${note?' — '+note:''}</p>`;
+  box.appendChild(action);
+  if(groups.length){
+    let win=document.createElement('div');
+    win.className='rp-action-box';
+    let html='<h3>RP Game Windows / Result Clearance</h3><div class="rp-window-grid">';
+    groups.forEach((g,idx)=>{
+      let rps=g.rps||[];
+      let title=idx===0?'Window 1 — first lock window':`Window ${idx+1} — ${g.staggerable_after_previous?'can re-check after prior result window':'not safely staggerable'}`;
+      let reason=(g.reason||'').replaceAll('_',' ');
+      let actionText=g.action||'';
+      html+=`<div class="rp-window"><div class="rp-window-title">${title}</div>
+        <div class="small muted">Reason: ${reason}. Projected group: <b>${g.projected_group_ip||'0.0'} IP</b> / <b>${fmtNum(g.projected_group_points||0)} pts</b>. Leaves <b>${g.left_after_group||'?'}</b>, allows <b>${g.sunday_sp_allowed_after_group??'?'}</b> SP.</div>
+        <ul>${rps.map(r=>`<li>${rpNameLine(r)} — est ${r.estimated_ip||'0.0'} IP, ${fmtNum(r.projected_points||0)} pts</li>`).join('')}</ul>
+        <div class="small ${String(actionText).includes('cost')?'orange':'green'}" style="margin-top:6px">${actionText}</div>
+      </div>`;
+    });
+    html+='</div>';
+    win.innerHTML=html;
+    box.appendChild(win);
+  }
+}
+function decisionSnapshot(){
+  let m=(apiState&&apiState.matchup)||{};
+  let t=tradeoffData()||{};
+  let groups=t.lock_groups||t.staggered_decision_plan||[];
+  return {
+    current_ip:String(apiLiveUsed(m)||''),
+    remaining_ip:String(apiLiveLeft(m)||''),
+    official_current_ip:String(apiOfficialUsed(m)||''),
+    official_remaining_ip:String(apiOfficialLeft(m)||''),
+    sp_only_left:String(m.projected_remaining_entering_sunday_sp_only||m.projected_remaining_entering_sunday||''),
+    with_rp_left:String(m.projected_remaining_entering_sunday_with_rp||''),
+    sp_only_allowed:String(m.projected_sunday_sp_allowed_sp_only||m.projected_sunday_sp_allowed||''),
+    with_rp_allowed:String(m.projected_sunday_sp_allowed_with_rp||m.projected_sunday_sp_allowed||''),
+    keep:namesList(t.keep_active||t.keep_if_risk_ok||[]),
+    bench:namesList(t.bench_first||[]),
+    stagger_mode:String(t.stagger_mode||''),
+    groups:(groups||[]).map(g=>({
+      reason:g.reason||'',ip:g.projected_group_ip||'',left:g.left_after_group||'',allowed:String(g.sunday_sp_allowed_after_group??''),
+      rps:(g.rps||[]).map(r=>`${r.name||'RP'}|${r.team||''}|${r.game_time||''}|${r.estimated_ip||''}`).join(';')
+    }))
+  };
+}
+function snapshotDiff(prev,curr){
+  let out=[];if(!prev)return out;
+  if(prev.current_ip&&curr.current_ip&&prev.current_ip!==curr.current_ip)out.push(`Current IP changed ${prev.current_ip} → ${curr.current_ip}.`);
+  if(prev.remaining_ip&&curr.remaining_ip&&prev.remaining_ip!==curr.remaining_ip)out.push(`Room changed ${prev.remaining_ip} → ${curr.remaining_ip}.`);
+  if(prev.with_rp_left&&curr.with_rp_left&&prev.with_rp_left!==curr.with_rp_left)out.push(`With-active-RP Sunday cushion changed ${prev.with_rp_left} → ${curr.with_rp_left}.`);
+  if(prev.with_rp_allowed&&curr.with_rp_allowed&&prev.with_rp_allowed!==curr.with_rp_allowed)out.push(`Sunday SP allowance with RP changed ${prev.with_rp_allowed} → ${curr.with_rp_allowed}.`);
+  if((prev.keep||'')!==(curr.keep||''))out.push(`Keep-active RP changed: ${prev.keep||'none'} → ${curr.keep||'none'}.`);
+  if((prev.bench||'')!==(curr.bench||''))out.push(`Bench/do-not-activate RP changed: ${prev.bench||'none'} → ${curr.bench||'none'}.`);
+  if(JSON.stringify(prev.groups||[])!==JSON.stringify(curr.groups||[]))out.push('RP game-window/result-clearance plan changed.');
+  return out;
+}
+function nextRpDecisionText(groups){
+  groups=groups||[];
+  for(let i=1;i<groups.length;i++){let rps=groups[i].rps||[];if(rps.length)return `Re-check before ${rpNameLine(rps[0])}.`}
+  if(groups.length){let rps=groups[0].rps||[];if(rps.length)return `Review before first lock window: ${rps.map(rpNameLine).join(', ')}.`}
+  return '';
+}
+
+function backendLiveAlerts(){
+  let m=(apiState&&apiState.matchup)||{};
+  let raw=(apiState&&apiState.raw)||{};
+  let candidates=[
+    m.live_strategy_alerts,
+    m.live_alerts,
+    m.sp_variance_alerts,
+    raw.live_strategy_alerts,
+    raw.strategy_alerts,
+    raw.alerts
+  ];
+  let out=[];
+  candidates.forEach(c=>{if(Array.isArray(c))out=out.concat(c)});
+  return out.filter(Boolean);
+}
+function alertText(a){
+  if(typeof a==='string')return a;
+  return a.message||a.warning||a.text||a.note||JSON.stringify(a);
+}
+
+function rpRowsByBackendTruth(){
+  return (apiState&&Array.isArray(apiState.rpRows))?apiState.rpRows:[];
+}
+function finalDnpNameSet(){
+  let set=new Set();
+  rpRowsByBackendTruth().forEach(r=>{
+    let nm=String(r.name||'').trim().toLowerCase();
+    let status=String(r.status||'').toLowerCase();
+    let gs=String(r.game_status||r.gameStatus||'').toLowerCase();
+    let est=ipToThirds(r.estimated_remaining_ip||r.estIp||'0.0');
+    let today=ipToThirds(r.today_ip||r.todayIp||'0.0');
+    if(nm&&(status==='final_dnp'||(gs==='final'&&today===0&&est===0)))set.add(nm);
+  });
+  return set;
+}
+function activeProjectedRpNameSet(){
+  let m=(apiState&&apiState.matchup)||{};
+  let set=new Set();
+  (m.active_rp_projection_rows||[]).forEach(r=>{
+    let nm=String(r.name||'').trim().toLowerCase();
+    if(nm&&r.active!==false&&String(r.status||'').toLowerCase()!=='final_dnp'&&ipToThirds(r.strategy_ip_used||r.estimated_remaining_ip||'0.0')>0)set.add(nm);
+  });
+  return set;
+}
+function filterActiveRpNames(arr){
+  let finalSet=finalDnpNameSet();
+  let projSet=activeProjectedRpNameSet();
+  return (arr||[]).filter(n=>{
+    let key=String(n||'').trim().toLowerCase();
+    if(!key||finalSet.has(key))return false;
+    return projSet.size?projSet.has(key):true;
+  });
+}
+function filterRpObjects(arr){
+  let finalSet=finalDnpNameSet();
+  let projSet=activeProjectedRpNameSet();
+  return (arr||[]).filter(r=>{
+    let key=String(r.name||'').trim().toLowerCase();
+    if(!key||finalSet.has(key))return false;
+    let gs=String(r.game_status||'').toLowerCase();
+    if(gs==='final'&&ipToThirds(r.today_ip||'0.0')===0&&ipToThirds(r.estimated_remaining_ip||r.estimated_ip||'0.0')===0)return false;
+    return projSet.size?projSet.has(key):true;
+  });
+}
+function actionableBackendAlerts(){
+  // SP-finished alerts are useful for audit, but once the projection has already
+  // switched to final IP they should not keep the big warning card open forever.
+  return backendLiveAlerts().filter(a=>{
+    let txt=String(alertText(a)||'').toLowerCase();
+    let type=String((a&&typeof a==='object'&&a.type)||'').toLowerCase();
+    if(type==='sp_finished_pitching'||txt.includes('confirmed finished pitching'))return false;
+    return true;
+  });
+}
+function renderDashboardWarning(){
+  let el=qs('dashWarning');if(!el)return;
+  let t=tradeoffData();
+  if(!apiProjected()||!t){el.style.display='none';return;}
+  let curr=decisionSnapshot(),prev=null;
+  try{prev=JSON.parse(localStorage.getItem('decisionSnapshot')||'null')}catch(e){prev=null}
+  let diffs=snapshotDiff(prev,curr);
+  let groups=t.lock_groups||t.staggered_decision_plan||[];
+  let keep=filterActiveRpNames(t.keep_active||t.keep_if_risk_ok||[]);
+  let bench=filterActiveRpNames(t.bench_first||[]);
+  let spOnly=Number(curr.sp_only_allowed||0),withRp=Number(curr.with_rp_allowed||0);
+  let danger=withRp<spOnly;
+  let filteredGroups=(groups||[]).map(g=>Object.assign({},g,{rps:filterRpObjects(g.rps||[])})).filter(g=>(g.rps||[]).length);
+  let next=nextRpDecisionText(filteredGroups);
+  let starts=[];
+  groups.forEach(g=>filterRpObjects(g.rps||[]).forEach(r=>starts.push(`${r.name||'RP'} ${r.team?`(${r.team})`:''}${r.game_time?` — ${r.game_time}`:''}`)));
+  let backendAlerts=actionableBackendAlerts();
+  let lines=[];
+  if(backendAlerts.length)lines.push(`<p><b>Live strategy alert:</b></p><ul>${backendAlerts.map(a=>`<li>${alertText(a)}</li>`).join('')}</ul>`);
+  if(diffs.length)lines.push(`<p><b>Situation changed since last pull:</b></p><ul>${diffs.map(x=>`<li>${x}</li>`).join('')}</ul>`);
+  if(danger)lines.push(`<p class="orange"><b>Warning:</b> active RP projection can reduce Sunday eligibility from ${spOnly} SP to ${withRp} SP.</p>`);
+  lines.push(`<p><b>Current RP action:</b> ${keep.length?`<span class="green">Keep active: ${namesList(keep)}</span>`:'<span class="muted">No keep-active RP listed</span>'}. ${bench.length?`<span class="orange">Bench/do not activate: ${namesList(bench)}</span>.`:''}</p>`);
+  if(next)lines.push(`<p class="blue"><b>Next checkpoint:</b> ${next}</p>`);
+  if(starts.length)lines.push(`<p><b>RP game starts:</b> ${starts.join(' • ')}</p>`);
+  if(!backendAlerts.length&&!diffs.length&&!danger&&bench.length===0){el.style.display='none';return;}
+  el.className='dashboard-warning '+((danger||backendAlerts.length)?'danger':(diffs.length?'':'ok'));
+  el.innerHTML=`<h2>${backendAlerts.length?'Live Strategy Warning':(diffs.length?'Updated Situation Warning':'RP Decision Warning')}</h2>${lines.join('')}`;
+  el.style.display='block';
+  try{localStorage.setItem('decisionSnapshot',JSON.stringify(curr))}catch(e){}
+}
+
+function renderTradeoff(){
+ let titleEl=qs('tradeoffTitle'), box=qs('tradeoffSummary'), tbl=qs('tradeoffTable'), cards=qs('tradeoffCards');
+ if(!box||!tbl||!cards)return;
+ if(titleEl)titleEl.textContent=tradeoffTitleText();
+ let tb=tbl.querySelector('tbody');tb.innerHTML='';cards.innerHTML='';
+ let t=tradeoffData();
+ if(!t){box.textContent='No RP/SP point tradeoff returned yet. Pull from Fantag after the backend patch is installed.';renderTradeoffActionPlan(null);return}
+ let marginal=t.third_sunday_sp||{};
+ let verdict=t.verdict||t.recommendation||'';
+ let bench=(t.bench_first||[]).join(', ');
+ let keep=(t.keep_if_risk_ok||t.keep_active||[]).join(', ');
+ box.innerHTML=`<b>${verdict||'Compare active RP upside against the marginal Sunday SP.'}</b><br>`+
+   `Marginal Sunday SP: <b>${marginal.name||'unknown'}</b> (${marginal.estimated_points||marginal.estimated_pts||'?'} pts, ${marginal.estimated_ip||'?'} IP).`+
+   (bench?` Bench first: <span class="orange"><b>${bench}</b></span>.`:'')+
+   (keep?` Best RP upside if accepting risk: <span class="green"><b>${keep}</b></span>.`:'');
+ renderTradeoffActionPlan(t);
+ let scenarios=t.rp_scenarios||t.scenarios||[];
+ scenarios.forEach(sc=>{
+   let net=Number(sc.net_points_vs_lost_sp??sc.net_points_vs_3rd_sp??sc.net_points??0);
+   let cls=net>=0?'green':'orange';
+   let scenarioLabel=(sc.label||sc.scenario||'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+   let rpIp=sc.projected_rp_ip||sc.rp_ip||'0.0';
+   let rpPts=fmtNum(sc.projected_rp_points??sc.rp_points);
+   let allowed=sc.sunday_sp_allowed_after_rp??sc.allowed_after_rp??'';
+   let lost=fmtNum(sc.lost_sp_points??0);
+   let rec=sc.recommendation||sc.action||'';
+   let netTxt=(net>=0?'+':'')+fmtNum(net);
+   let tr=document.createElement('tr');
+   tr.innerHTML=`<td>${scenarioLabel}</td><td class="right">${rpIp}</td><td class="right">${rpPts}</td><td class="right">${allowed}</td><td class="right">${lost}</td><td class="right ${cls}">${netTxt}</td><td>${rec}</td>`;
+   tb.appendChild(tr);
+   let card=document.createElement('div');
+   card.className='tradeoff-scenario';
+   let rpNames=(sc.rp_names||[]).join(', ');
+   card.innerHTML=`<h3>${scenarioLabel}</h3>${rpNames?`<div class="small muted" style="margin-bottom:8px">${rpNames}</div>`:''}<div class="tradeoff-kv">`+
+     `<div><span class="k">RP IP</span><span class="v">${rpIp}</span></div>`+
+     `<div><span class="k">RP Pts</span><span class="v">${rpPts}</span></div>`+
+     `<div><span class="k">SP Allowed</span><span class="v">${allowed}</span></div>`+
+     `<div><span class="k">Lost SP Pts</span><span class="v">${lost}</span></div>`+
+     `<div><span class="k">Net</span><span class="v ${cls}">${netTxt}</span></div>`+
+     `</div><div class="tradeoff-rec"><b>Recommendation:</b> ${rec}</div>`;
+   cards.appendChild(card);
+ });
+}
+
+function calc(reason){let t=totals();let m=(apiState&&apiState.matchup)||{};let dash=(apiState&&apiState.dashboard)||{};let strat=(apiState&&apiState.strategy)||{};let useApi=apiProjected();
+ let currentText=useApi?String(apiLiveUsed(m)||dash.current_actual_ip_used||thirdsToIp(t.current)):thirdsToIp(t.current);
+ let remainText=useApi?String(apiLiveLeft(m)||dash.current_actual_ip_left||thirdsToIp(t.cap-t.current)):thirdsToIp(t.cap-t.current);
+ let officialUsed=useApi?apiOfficialUsed(m):'';
+ let officialLeft=useApi?apiOfficialLeft(m):'';
+ qs('remainBig').textContent=remainText+' IP left';qs('barFill').style.width=Math.min(100,Math.max(0,ipToThirds(currentText)/ipToThirds(qs('capIp').value)*100))+'%';let apiVer=(apiState&&apiState.raw&&apiState.raw.version)?` API ${apiState.raw.version}.`:'';qs('lastCalc').textContent=(useApi?`Live ${currentText} used / ${remainText} left. ESPN start ref ${officialUsed} used / ${officialLeft} left.${apiVer}`:'Last calc: '+new Date().toLocaleTimeString())+(reason?' — '+reason:'');
+ let allowedVal=useApi?Number(m.projected_sunday_sp_allowed||0):t.allow;let cls=recommendationClass(allowedVal);
+ qs('sunAllowed').textContent=allowedVal+' SP';
+ if(useApi){
+   let preList=m.pre_sunday_sp_projected||m.pending_before_sunday||[];
+   let preRpText=apiRpProjected(m), preRpPts=apiRpProjectedPts(m);let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowedSp=apiSpOnlyAllowed(m);let usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowedRp=apiWithRpAllowed(m);
+   allowedVal=allowedSp;cls=recommendationClass(allowedVal);qs('sunAllowed').textContent=allowedVal+' SP';
+   qs('preSunSp').textContent=preSunText(preList);qs('preSunRp').textContent=rpIpPtsText(preRpText,preRpPts);
+   qs('sunUsed').textContent=usedSp;qs('sunLeft').textContent=leftSp;
+   qs('sunNames').textContent=apiPickupsText();qs('finalTotal').textContent=usedSp;
+   let floor=spFloorForAllowed(allowedVal);let cushion=ipToThirds(leftSp)-ipToThirds(floor);qs('overUnder').innerHTML=`<span class="${cushion>=0?'green':'red'}">${cushion>=0?'+':''}${thirdsToIp(cushion)} vs ${allowedVal}-SP floor</span>`;
+   qs('thresholdMsg').innerHTML=`Live current: <span>${currentText}</span> used / <span>${remainText}</span> left. SP-only Sunday forecast: <span class="${cls}">${leftSp}</span> left. With active RP: <span>${leftRp}</span> left / <b>${allowedRp} SP</b>. ESPN start ref only: <span>${officialLeft}</span> left.`;
+   qs('mainRec').className='rec '+(allowedRp<allowedVal?'orange':cls);qs('mainRec').textContent=allowedRp<allowedVal?`${ordinal(allowedVal)}-SP risk: RP projection drops to ${allowedRp} SP`:`Projected Sunday with RP: ${allowedRp} SP eligible`;
+   qs('mainWhy').textContent=apiStrategySummary(m);
+   qs('dayAdvice').innerHTML=dayAdvice(t);
+   let pickups=Number(m.suggested_sunday_pickups||0);let pickupMsg=pickups>0?`<p class="blue"><b>Pickup watch:</b> Projection allows ${allowedVal} Sunday SP, but only ${m.sunday_sp_on_roster_count||0} Sunday SP are listed. Look for ${pickups} extra Sunday starter if matchup quality is good.</p>`:`<p class="green"><b>Pickup watch:</b> Current Sunday starters match the SP-only eligibility. No extra pickup is required unless improving matchup quality.</p>`;
+   let rpMsg=ipToThirds(preRpText)>0?`<p class="${allowedRp<allowedVal?'orange':'green'}"><b>RP risk:</b> Active RP projection before Sunday is ${preRpText} IP / ${preRpPts} pts. With RP, Sunday projects to ${usedRp} used / ${leftRp} left, ${allowedRp} SP eligible.</p>`:'';
+   qs('wiggle').innerHTML=`SP-only Sunday forecast room: <b class="${cls}">${leftSp}</b>. ${rpMsg}${pickupMsg}`;renderTradeoff();
+ }else{
+   qs('preSunSp').textContent=thirdsToIp(t.preSp);qs('preSunRp').textContent=thirdsToIp(t.preRp);qs('sunUsed').textContent=thirdsToIp(t.used);qs('sunLeft').textContent=thirdsToIp(t.sunLeft);qs('sunNames').textContent=t.sun.join(', ')||'none';qs('finalTotal').textContent=thirdsToIp(t.final);let over=t.final-t.cap;qs('overUnder').innerHTML=`<span class="${over>=0?'green':'yellow'}">${over>=0?'+':''}${thirdsToIp(over)}</span>`;qs('mainRec').className='rec '+cls;qs('mainRec').textContent=allowedVal+' SP eligible';qs('mainWhy').textContent=adviceText(t);qs('thresholdMsg').innerHTML=`Projected Sunday left: <span class="${cls}">${thirdsToIp(t.sunLeft)}</span>`;let rpRoom=t.cap-ipToThirds('5.5')-t.current-t.preSp;qs('wiggle').innerHTML=`You can spend about <b class="${rpRoom>=0?'green':'red'}">${thirdsToIp(rpRoom)}</b> more pre-Sunday RP innings and still keep 5.5 IP left for two Sunday SP. Current active RP projection: <b>${thirdsToIp(t.preRp)}</b>.`;qs('dayAdvice').innerHTML=dayAdvice(t);renderTradeoff();
+ }
+ renderTradeoff();renderDashboardWarning();qs('windowInfo').textContent=`Window ${qs('matchupStart').value} through ${qs('matchupEnd').value}. Final rows are actuals.${hasManualWindow()?' Local rollover window is locked; stale API dates will not overwrite it.':''}`;updateRpSummary();saveOnly()}
+function adviceText(t){if(t.sunLeft>=ipToThirds('5.5')&&t.sunLeft<ipToThirds('10.5'))return 'Protect this range. It keeps Schlittler + Soroka available Sunday and lets them push past 65.';if(t.sunLeft>=ipToThirds('10.5'))return 'You still have enough room for 3 Sunday SP. Keep tracking active RP innings and Saturday SP results.';if(t.sunLeft>=ipToThirds('0.5'))return 'You are below the two-SP threshold. Use only the best Sunday SP unless you regain room from stat corrections.';return 'You are projected to lose the Sunday overage start ability.'}
+function dayAdvice(t){if(apiProjected()){let m=apiState.matchup, pre=m.pre_sunday_sp_projected||m.pending_before_sunday||[], sun=m.sunday_sp_on_roster||[];let preTxt=pre.length?pre.map(x=>`${x.name} (${x.estimated_ip} IP on ${x.date})`).join(', '):'No more pre-Sunday SP projected';let sunTxt=sun.length?sun.map(x=>`${x.name} (${x.estimated_ip} IP)`).join(', '):'No Sunday SP listed';let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowSp=apiSpOnlyAllowed(m), rp=apiRpProjected(m), rpPts=apiRpProjectedPts(m), usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowRp=apiWithRpAllowed(m);let html=`<p><b>Current status:</b> ${apiRealityNote(m)} SP-only Sunday morning is ${usedSp} used / ${leftSp} left.</p><p><b>Saturday:</b> ${preTxt}.</p><p><b>Sunday:</b> Start ${sunTxt}. SP-only eligibility is <b>${allowSp} SP</b>.</p>`;if(ipToThirds(rp)>0){html+=`<p class="${allowRp<allowSp?'orange':'green'}"><b>Active RP risk:</b> ${rp} projected RP IP / ${rpPts} projected RP pts before Sunday changes the projection to ${usedRp} used / ${leftRp} left, which is <b>${allowRp} SP</b>.</p>`}if(allowRp<allowSp)html+=`<p class="orange"><b>Action:</b> To protect ${allowSp}-SP Sunday, bench or limit active RP before they pitch.</p>`;else html+=`<p class="green"><b>Action:</b> No extra Sunday pickup required by current projection. Keep tracking active RP innings.</p>`;return html}
+ let out='<p><b>Current matchup strategy:</b> Use final results as actuals. Start remaining pre-Sunday SP only if still scheduled. Sunday: use available SP based on projected IP left.</p>';if(t.sunLeft<ipToThirds('5.5'))out+='<p class="orange"><b>Action:</b> remove active RP before they pitch and do not add more pre-Sunday SP.</p>';else if(t.sunLeft<ipToThirds('10.5'))out+='<p class="green"><b>Action:</b> 2-SP zone. Keep both Sunday SP ready. Do not let RP burn below 5.5 IP left.</p>';else out+='<p class="blue"><b>Action:</b> safe zone. Consider extra Sunday SP only if eligibility exceeds rostered Sunday starters.</p>';return out}
+function autoFillDates(){let s=qs('matchupStart').value;pitchers.forEach(p=>{p.date=p.name.includes('Schlittler')||p.name.includes('Soroka')?addDays(s,6):(p.name.includes('Joe Ryan')?addDays(s,5):addDays(s,4))});relievers.forEach(r=>r.date=addDays(s,4));saveCalc('auto-filled dates')}
+function nextMatchup(auto=false){
+ let s=addDays(qs('matchupStart').value,7);
+ qs('matchupStart').value=s;
+ qs('matchupEnd').value=addDays(s,6);
+ qs('currentIp').value='0.0';
+ localStorage.setItem('matchupWindowManual','1');
+ localStorage.removeItem('apiState');
+ localStorage.removeItem('decisionSnapshot');
+ apiState=null;
+ resetRowsForNewWindow('next matchup prepared');
+ saveCalc(auto?'auto-rolled next matchup':'next matchup prepared')
+}
+function clearLocalAndPull(){localStorage.removeItem('spRows');localStorage.removeItem('rpRows');localStorage.removeItem('apiState');clearManualWindow();pitchers=[];relievers=[];render();pullApi()}
+function demoRp(){relievers=[{name:'Closer / high leverage RP',active:true,status:'pending',date:addDays(qs('matchupStart').value,4),avgIp:'1.0',useProb:'55',estIp:'1.2',todayIp:'0.0',matchupIp:'1.1',actualPts:'8'},{name:'Setup RP / leverage arm',active:true,status:'pending',date:addDays(qs('matchupStart').value,4),avgIp:'1.0',useProb:'45',estIp:'1.1',todayIp:'0.0',matchupIp:'1.0',actualPts:'6'},{name:'Middle/holds RP',active:true,status:'pending',date:addDays(qs('matchupStart').value,4),avgIp:'0.2',useProb:'40',estIp:'1.0',todayIp:'0.0',matchupIp:'1.2',actualPts:'7'},{name:'Bench/rotate RP',active:false,status:'pending',date:addDays(qs('matchupStart').value,4),avgIp:'1.0',useProb:'30',estIp:'0.8',todayIp:'0.0',matchupIp:'0.2',actualPts:'2'}];saveCalc('demo RP rows')}
+function resetRpForecast(){let est=['1.2','1.1','1.0','0.8'],prob=['55','45','40','30'];relievers.forEach((r,i)=>{r.estIp=est[i]||'0.0';r.useProb=prob[i]||'0';if(!r.name||r.name.includes('Fantag')||r.name.includes('Enter RP'))r.name='Enter RP '+(i+1)+' name / Fantag fill'});saveCalc('RP forecast reset')}
+async function pullApi(){let url=qs('apiUrl').value.trim();if(!url){qs('apiMsg').textContent='No Fantag API URL set. Use manual mode or Demo-fill RP names/test data.';return}try{qs('apiMsg').textContent='Pulling Fantag...';let pullUrl=addRefreshParams(url);let res=await fetch(pullUrl,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);let raw=await res.json();let d=normalizeApiState(raw);
+ let apiStart=normDate(d.matchupStart), apiEnd=normDate(d.matchupEnd), localStart=localWindowStart(), localEnd=localWindowEnd();
+ let staleApi=apiWindowStaleForLocal(d);
+ if(staleApi){
+   apiState=null;
+   localStorage.removeItem('apiState');
+   resetRowsForNewWindow('stale api ignored');
+   qs('apiMsg').textContent=`Fantag pull ignored stale API window ${apiStart||'?'} through ${apiEnd||'?'}; local matchup remains ${localStart} through ${localEnd}. Backend must return this new window before live current-week stats can drive the dashboard.`;
+   render();calc('stale Fantag window ignored');return;
+ }
+ apiState=d;localStorage.setItem('apiState',JSON.stringify(d));
+ if(d.currentIp!=='')qs('currentIp').value=d.currentIp;
+ // Accept a backend window only when it is current or newer than the local prepared window.
+ if(apiStart&&(!hasManualWindow()||apiStart>=localWindowStart())){qs('matchupStart').value=apiStart;if(apiEnd)qs('matchupEnd').value=apiEnd;clearManualWindow()}
+ let applied=applyApiRowsToLocal(d)||{};
+ let baseMsg='Fantag pull OK: '+new Date().toLocaleTimeString()+(d.spRows.length||d.rpRows.length?` — loaded ${d.spRows.length} SP / ${d.rpRows.length} RP`:' — no roster rows returned')+samplePullText()+(d.raw&&d.raw.version?` — API ${d.raw.version}`:'');
+ if(applied.stale)baseMsg+=' — stale rows ignored';
+ qs('apiMsg').textContent=baseMsg;
+ maybeAutoRollover('Fantag pull');
+ render();calc('Fantag pull')}catch(e){qs('apiMsg').textContent='Fantag pull failed: '+e.message}}
+let timer=null;function toggleAuto(save=true){if(timer)clearInterval(timer);timer=null;if(qs('autoRefresh').checked)timer=setInterval(pullApi,Number(qs('refreshSec').value||60)*1000);if(save)saveOnly()}
+window.addEventListener('load',syncStickyOffsets);window.addEventListener('resize',syncStickyOffsets);window.addEventListener('orientationchange',syncStickyOffsets);
+load();syncStickyOffsets();
+</script>
+</body></html>

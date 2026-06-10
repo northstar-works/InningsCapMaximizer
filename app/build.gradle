@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.application'
+}
+
+def releaseStoreFile = System.getenv("INNINGS_KEYSTORE_FILE") ?: System.getenv("FANTAG_KEYSTORE_FILE")
+def releaseStorePassword = System.getenv("INNINGS_KEYSTORE_PASSWORD") ?: System.getenv("FANTAG_KEYSTORE_PASSWORD")
+def releaseKeyAlias = System.getenv("INNINGS_KEY_ALIAS") ?: System.getenv("FANTAG_KEY_ALIAS")
+def releaseKeyPassword = System.getenv("INNINGS_KEY_PASSWORD") ?: System.getenv("FANTAG_KEY_PASSWORD")
+def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
+android {
+    namespace 'com.northstarlabs.inningsmax'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.northstarlabs.inningsmax'
+        minSdk 24
+        targetSdk 34
+        versionCode 32
+        versionName '1.6.7'
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}

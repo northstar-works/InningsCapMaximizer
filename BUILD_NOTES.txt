@@ -1,0 +1,7 @@
+Innings Cap Maximizer v1.6.7 b32
+
+UI change for v28ah backend:
+- Dashboard now labels Active RP projection as pre-Sunday IP / projected points.
+- RP risk text now shows projected RP points before Sunday separately from Sunday SP eligibility math.
+- Clarifies that actual RP innings are already included in current IP and future RP IP/points are separate remaining-risk projections.
+- Version bumped to Android versionCode 32.
