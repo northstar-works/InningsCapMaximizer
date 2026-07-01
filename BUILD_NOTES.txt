@@ -5,3 +5,11 @@ UI change for v28ah backend:
 - RP risk text now shows projected RP points before Sunday separately from Sunday SP eligibility math.
 - Clarifies that actual RP innings are already included in current IP and future RP IP/points are separate remaining-risk projections.
 - Version bumped to Android versionCode 32.
+
+- v1.6.9 b34: Sunday UI uses Current/Recap wording, excludes RP projections from Sunday SP eligibility display, and adds recap/post-match accordion placeholders.
+
+
+- v1.7.0 b35: Added Sunday Overage Optimizer. It compares Sunday eligibility buckets, active RP through Saturday, all future SP options, points/IP, start-all risk, and tags SP rows START / SKIP / LOCKED SUN / SUN MAYBE to preserve high-value Sunday overage starts.
+
+
+- v1.7.1 b36: Fixed Sunday Overage Optimizer target selection. It now targets only available Sunday SPs on the roster, does not treat 5-SP IP room as a requirement to pick up two more starters, uses a points-maximizing Mon–Sat subset optimizer, and shows how many Mon–Sat SPs to START/SKIP to preserve the best Sunday overage bucket.

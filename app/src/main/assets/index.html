@@ -47,28 +47,60 @@
 #spTable tr.final{background:rgba(35,209,139,.075)!important;opacity:.82}
 #spTable tr:not(.live):not(.final).plan-start{background:rgba(35,209,139,.07)}
 
+.accordion-card details{background:#0b1528;border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden}
+.accordion-card summary{cursor:pointer;font-weight:850;padding:10px 12px;list-style:none}
+.accordion-card summary::-webkit-details-marker{display:none}
+.accordion-card summary:after{content:'▾';float:right;color:var(--muted)}
+.accordion-card details:not([open]) summary:after{content:'▸'}
+.accordion-body{padding:0 12px 12px;color:var(--text);font-size:13px;line-height:1.38}
+.accordion-body p{margin:6px 0}.accordion-body ul{margin:6px 0 0 18px;padding:0}.accordion-body li{margin:3px 0}
+.recap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:8px 0}
+.recap-grid .k{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.recap-grid .v{font-weight:850}
+
+.optimizer-card .summary-line{font-size:14px;line-height:1.4;margin:6px 0}
+.optimizer-card .target{font-size:18px;font-weight:900}
+.optimizer-warning{border-left:4px solid var(--orange);background:rgba(255,159,67,.10);border-radius:12px;padding:10px;margin:8px 0;line-height:1.35}
+.optimizer-ok{border-left:4px solid var(--green);background:rgba(35,209,139,.10);border-radius:12px;padding:10px;margin:8px 0;line-height:1.35}
+.optimizer-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px}
+.optimizer-table th,.optimizer-table td{font-size:12px;padding:6px;border-bottom:1px solid var(--line)}
+.opt-badge{display:inline-block;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:900;white-space:nowrap}
+.opt-start,.opt-locked{background:rgba(35,209,139,.14);border:1px solid var(--green);color:var(--green)}
+.opt-skip{background:rgba(255,159,67,.15);border:1px solid var(--orange);color:var(--orange)}
+.opt-maybe{background:rgba(72,168,255,.14);border:1px solid var(--blue);color:var(--blue)}
+.opt-risk{background:rgba(255,91,107,.13);border:1px solid var(--red);color:var(--red)}
+
 </style>
 </head>
 <body>
-<header><h1><img src="app_logo.png" class="logo" alt="Innings Max logo"><span>Innings Max</span><span class="pill version">v1.6.7 b32</span></h1><div class="sub">Fantasy pitching cap planner — live 65+ Sunday overage strategy</div></header>
+<header><h1><img src="app_logo.png" class="logo" alt="Innings Max logo"><span>Innings Max</span><span class="pill version">v1.7.1 b36</span></h1><div class="sub">Fantasy pitching cap planner — live 65+ Sunday overage strategy</div></header>
 <div class="nav"><button class="tab active" onclick="show('dash',this)">Dashboard</button><button class="tab" onclick="show('sp',this)">SP Plan</button><button class="tab" onclick="show('rp',this)">RP Plan</button><button class="tab" onclick="show('settings',this)">Settings</button></div>
 <div class="wrap">
 <section class="page active" id="dash">
  <div id="dashWarning" class="dashboard-warning" style="display:none"></div>
  <div class="grid grid3">
   <div class="card"><h2>Live Current IP</h2><div class="row"><input id="currentIp" value="27.2" oninput="saveCalc('manual current IP')"><span class="muted">of</span><input id="capIp" value="65.0" oninput="saveCalc('cap change')"></div><div class="big" id="remainBig"></div><div class="bar"><div id="barFill"></div></div><div class="small muted" id="lastCalc"></div></div>
-  <div class="card"><h2>Projected Sunday SP Eligibility</h2><div class="small muted">Sunday-morning IP left: 0.5=1 SP • 5.5=2 • 10.5=3 • 15.5=4 • 20.5=5</div><div class="big" id="sunAllowed"></div><div class="small" id="thresholdMsg"></div></div>
+  <div class="card"><h2 id="sundayEligibilityTitle">Projected Sunday SP Eligibility</h2><div class="small muted">Sunday-morning IP left: 0.5=1 SP • 5.5=2 • 10.5=3 • 15.5=4 • 20.5=5</div><div class="big" id="sunAllowed"></div><div class="small" id="thresholdMsg"></div></div>
   <div class="card"><h2>Sunday Strategy Recommendation</h2><div class="rec" id="mainRec"></div><div class="small muted" id="mainWhy"></div></div>
  </div>
- <div class="card"><h2>Projected Path to Sunday</h2><table><tbody>
-  <tr><td>Pre-Sunday SP projected</td><td class="right" id="preSunSp"></td></tr>
-  <tr><td>Projected RP before Sunday <span class="muted small">(IP / Pts)</span></td><td class="right" id="preSunRp"></td></tr>
-  <tr><td>Sunday morning projected IP used</td><td class="right" id="sunUsed"></td></tr>
-  <tr><td>Sunday morning projected IP left</td><td class="right" id="sunLeft"></td></tr>
+ <div class="card"><h2 id="pathTitle">Projected Path to Sunday</h2><table><tbody>
+  <tr><td id="preSunSpLabel">Pre-Sunday SP projected</td><td class="right" id="preSunSp"></td></tr>
+  <tr><td id="preSunRpLabel">Projected RP before Sunday <span class="muted small">(IP / Pts)</span></td><td class="right" id="preSunRp"></td></tr>
+  <tr><td id="sunUsedLabel">Sunday morning projected IP used</td><td class="right" id="sunUsed"></td></tr>
+  <tr><td id="sunLeftLabel">Sunday morning projected IP left</td><td class="right" id="sunLeft"></td></tr>
   <tr><td>Sunday SP on roster</td><td class="right" id="sunNames"></td></tr>
-  <tr><td>Projected Sunday morning IP used</td><td class="right" id="finalTotal"></td></tr>
-  <tr><td>Projected Sunday morning cushion</td><td class="right" id="overUnder"></td></tr>
+  <tr><td id="finalTotalLabel">Projected Sunday morning IP used</td><td class="right" id="finalTotal"></td></tr>
+  <tr><td id="overUnderLabel">Projected Sunday morning cushion</td><td class="right" id="overUnder"></td></tr>
  </tbody></table></div>
+ <div class="card accordion-card" id="recapAccordionCard" style="display:none"><h2 id="recapCardTitle">Mon–Sat Projection Recap</h2>
+  <details id="weeklyRecapDetails" open><summary id="weeklyRecapSummary">Mon–Sat Projection Recap</summary><div class="accordion-body" id="weeklyRecapBody"></div></details>
+  <details id="postMatchReviewDetails"><summary id="postMatchReviewSummary">Post-Match Optimization Review</summary><div class="accordion-body" id="postMatchReviewBody"></div></details>
+ </div>
+ <div class="card accordion-card optimizer-card" id="sundayOptimizerCard"><h2>Sunday Overage Optimizer</h2>
+  <div id="sundayOptimizerTop" class="summary-line muted">Calculating start/skip plan...</div>
+  <details id="sundayOptimizerDetails" open><summary>Recommended SP Start/Skip Plan</summary><div class="accordion-body" id="sundayOptimizerBody"></div></details>
+  <details id="sundayOptimizerScenarioDetails"><summary>Bucket Comparison / Start-All Risk</summary><div class="accordion-body" id="sundayOptimizerScenarioBody"></div></details>
+ </div>
  <div class="card" id="tradeoffCard"><h2 id="tradeoffTitle">RP vs Marginal Sunday SP Point Tradeoff</h2><div id="tradeoffSummary" class="small muted">Pull Fantag to calculate RP upside versus the marginal Sunday SP.</div><div id="tradeoffActionPlan" class="tradeoff-action-plan"></div><div id="tradeoffCards" class="tradeoff-cards" style="margin-top:8px"></div><div class="scroll tradeoff-table-wrap" style="margin-top:8px"><table id="tradeoffTable"><thead><tr><th>Scenario</th><th class="right">RP IP</th><th class="right">RP Pts</th><th class="right">SP Allowed</th><th class="right">Lost SP</th><th class="right">Net</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
  <div class="grid grid2"><div class="card"><h2>What To Do Next</h2><div id="dayAdvice"></div></div><div class="card"><h2>RP / Pickup Watch</h2><div id="wiggle"></div><div class="small muted" style="margin-top:8px">Current IP already includes actual RP innings. Projected RP IP/points before Sunday are separate future risk only.</div></div></div>
 </section>
@@ -89,8 +121,8 @@
 </section>
 </div>
 <script>
-const VERSION='1.6.6 b31';
-const APP_BUILD='v1.6.6-b31';
+const VERSION='1.7.1 b36';
+const APP_BUILD='v1.7.1-b36';
 function qs(id){return document.getElementById(id)};function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));qs(id).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active')}
 function normDate(s){
  if(!s)return'';
@@ -235,7 +267,7 @@ function statusBadge(status){
  let label=s==='live'?'LIVE NOW':(s==='final_dnp'?'FINAL DNP':(finalLike?'FINAL':'PENDING'));
  return `<span class="${cls}">${label}</span>`;
 }
-function render(){let tb=qs('spTable').querySelector('tbody');tb.innerHTML='';pitchers.forEach((p,i)=>{let tr=document.createElement('tr');tr.className='plan-'+p.plan+(p.status==='live'?' live':'')+(p.status==='final'?' final':'');tr.innerHTML=`<td><input class="name" value="${p.name}" oninput="pitchers[${i}].name=this.value;saveOnly()">${statusBadge(p.status)}${p.liveStatusNote?`<div class="small blue">${p.liveStatusNote}</div>`:''}</td><td><input class="date" type="date" value="${normDate(p.date)}" onchange="pitchers[${i}].date=this.value;saveCalc('SP date')"><div class="small muted">${dayLabel(p.date)}</div></td><td><select onchange="pitchers[${i}].status=this.value;saveCalc('SP status')">${['pending','live','final','postponed'].map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><select onchange="pitchers[${i}].plan=this.value;saveCalc('SP plan')">${['start','maybe','skip'].map(s=>`<option ${p.plan===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="right"><input class="mini" value="${p.estIp}" oninput="pitchers[${i}].estIp=this.value;saveCalc('SP est IP')"></td><td class="right"><input class="mini" value="${p.estPts}" oninput="pitchers[${i}].estPts=this.value;saveOnly()"></td><td class="right"><input class="mini" value="${p.actualIp||''}" oninput="pitchers[${i}].actualIp=this.value;saveCalc('SP actual IP')"></td><td class="right"><input class="mini" value="${p.actualPts||''}" oninput="pitchers[${i}].actualPts=this.value;saveOnly()"></td><td><span class="badge">${p.plan.toUpperCase()}</span></td>`;tb.appendChild(tr)});
+function render(){let tb=qs('spTable').querySelector('tbody');tb.innerHTML='';pitchers.forEach((p,i)=>{let tr=document.createElement('tr');tr.className='plan-'+p.plan+(p.status==='live'?' live':'')+(p.status==='final'?' final':'');tr.innerHTML=`<td><input class="name" value="${p.name}" oninput="pitchers[${i}].name=this.value;saveOnly()">${statusBadge(p.status)}${p.liveStatusNote?`<div class="small blue">${p.liveStatusNote}</div>`:''}</td><td><input class="date" type="date" value="${normDate(p.date)}" onchange="pitchers[${i}].date=this.value;saveCalc('SP date')"><div class="small muted">${dayLabel(p.date)}</div></td><td><select onchange="pitchers[${i}].status=this.value;saveCalc('SP status')">${['pending','live','final','postponed'].map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><select onchange="pitchers[${i}].plan=this.value;saveCalc('SP plan')">${['start','maybe','skip'].map(s=>`<option ${p.plan===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="right"><input class="mini" value="${p.estIp}" oninput="pitchers[${i}].estIp=this.value;saveCalc('SP est IP')"></td><td class="right"><input class="mini" value="${p.estPts}" oninput="pitchers[${i}].estPts=this.value;saveOnly()"></td><td class="right"><input class="mini" value="${p.actualIp||''}" oninput="pitchers[${i}].actualIp=this.value;saveCalc('SP actual IP')"></td><td class="right"><input class="mini" value="${p.actualPts||''}" oninput="pitchers[${i}].actualPts=this.value;saveOnly()"></td><td>${optimizerBadgeHtml(p)}</td>`;tb.appendChild(tr)});
 let rb=qs('rpTable').querySelector('tbody');rb.innerHTML='';relievers.forEach((r,i)=>{let tr=document.createElement('tr');let action=rpAction(r);let finalLike=['final','final_dnp','dnp','no_appearance'].includes(String(r.status||'').toLowerCase());tr.className=(r.status==='live'?'live ':'')+(finalLike?'final ':'')+(r.active?'plan-start':'plan-skip');tr.innerHTML=`<td><input class="name" value="${r.name}" oninput="relievers[${i}].name=this.value;saveOnly()"></td><td class="center"><input type="checkbox" style="width:auto" ${r.active?'checked':''} onchange="relievers[${i}].active=this.checked;saveCalc('RP active')"></td><td><select onchange="relievers[${i}].status=this.value;saveCalc('RP status')">${['pending','live','final','final_dnp','postponed'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}</select>${r.gameStatus?`<div class="small muted">MLB: ${r.gameStatus}</div>`:''}${r.strategyBasis?`<div class="small muted">${r.strategyBasis.replaceAll('_',' ')}</div>`:''}</td><td><input class="date" type="date" value="${normDate(r.date)}" onchange="relievers[${i}].date=this.value;saveCalc('RP date')"><div class="small muted">${dayLabel(r.date)}</div></td><td class="right"><input class="mini" value="${r.avgIp}" oninput="relievers[${i}].avgIp=this.value;saveCalc('RP avg')"></td><td class="right"><input class="mini" value="${r.matchupIp}" oninput="relievers[${i}].matchupIp=this.value;saveCalc('RP matchup')"></td><td class="right"><input class="mini" value="${r.matchupPts||r.actualPts||''}" oninput="relievers[${i}].matchupPts=this.value;saveOnly()"></td><td class="right"><input class="mini" value="${r.useProb}" oninput="relievers[${i}].useProb=this.value;saveCalc('RP prob')"></td><td class="right"><input class="mini" value="${r.estIp}" oninput="relievers[${i}].estIp=this.value;saveCalc('RP est rem')"></td><td class="right"><input class="mini" value="${r.todayIp}" oninput="relievers[${i}].todayIp=this.value;saveCalc('RP today')"></td><td><span class="${action.cls}">${action.txt}</span></td>`;rb.appendChild(tr)})}
 function updateRpSummary(){let active=activeRpRows().filter(futureRow).reduce((sum,r)=>sum+ipToThirds(r.estIp),0);let pool=relievers.filter(futureRow).reduce((sum,r)=>sum+ipToThirds(r.estIp),0);let actual=relievers.reduce((sum,r)=>sum+ipToThirds(r.matchupIp),0);if(qs('rpActiveTotal'))qs('rpActiveTotal').textContent=thirdsToIp(active)+' IP';if(qs('rpPoolTotal'))qs('rpPoolTotal').textContent=thirdsToIp(pool)+' IP';if(qs('rpMatchupActualTotal'))qs('rpMatchupActualTotal').textContent=thirdsToIp(actual)+' IP';}
 function rpAction(r){let s=String(r.status||'').toLowerCase();if(s==='final_dnp'||s==='dnp'||s==='no_appearance')return{txt:(r.action||'final — did not pitch today'),cls:'yellow'};if(r.counted)return{txt:(r.action&&r.action!=='counted in matchup'?r.action:'counted'),cls:'green'};if(!r.active)return{txt:(r.action|| (r.slot==='BE'?'bench — not counted':'bench')),cls:'orange'};if(s==='final')return{txt:(r.action||'final — no projected IP left'),cls:'yellow'};if(s==='live')return{txt:(r.action||'live counting'),cls:'red'};let t=totals();if(t.sunLeft<ipToThirds('5.5'))return{txt:'bench to protect 2 SP',cls:'orange'};if(t.sunLeft<ipToThirds('10.5'))return{txt:'use carefully',cls:'yellow'};return{txt:'active OK',cls:'green'}}
@@ -251,13 +283,14 @@ function spFloorForAllowed(n){let floors=['0.0','0.5','5.5','10.5','15.5','20.5'
 function apiStrategySummary(m){
  let allowed=apiSpOnlyAllowed(m), used=apiSpOnlyUsed(m), left=apiSpOnlyLeft(m), rp=apiRpProjected(m), usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowRp=apiWithRpAllowed(m);
  let liveUsed=apiLiveUsed(m), liveLeft=apiLiveLeft(m), offUsed=apiOfficialUsed(m), offLeft=apiOfficialLeft(m);
- let sun=m.sunday_sp_on_roster||[];
- let sunTxt=sun.length?sun.map(x=>x.name).join(', '):'no Sunday SP listed';
- let pickupCount=Number(m.suggested_sunday_pickups||0);
- let pickupTxt=pickupCount>0?` Need ${pickupCount} more Sunday starter${pickupCount>1?'s':''} if matchup quality is good.`:' No extra Sunday pickup is required by the current projection.';
- let rpTxt=ipToThirds(rp)>0?` Active RP forecast adds ${rp} IP, moving the Sunday forecast to ${usedRp} used / ${leftRp} left, still ${allowRp} SP eligible.`:' No active RP innings are projected before Sunday.';
- let verdict=allowRp<allowed?` Warning: active RP forecast drops Sunday eligibility from ${allowed} SP to ${allowRp} SP.`:` Recommendation: keep the ${allowRp} Sunday SP plan; active RP projection is currently acceptable.`;
- return `Live current reality is ${liveUsed} used / ${liveLeft} left. ESPN start reference only is ${offUsed} used / ${offLeft} left. SP-only Sunday forecast is ${used} used / ${left} left, which supports ${allowed} Sunday SP. Sunday SP listed: ${sunTxt}.${pickupTxt}${rpTxt} ${verdict}`;
+ let opt=null;try{opt=buildSundayOverageOptimizer()}catch(e){}
+ let target=opt&&opt.best?opt.best.target:Math.min(allowed,Number(m.sunday_sp_on_roster_count||0)||allowed);
+ let available=opt?opt.maxSun:(Number(m.sunday_sp_on_roster_count||0));
+ let skipCount=opt&&opt.best&&opt.best.preSkip?opt.best.preSkip.length:0;
+ let startCount=opt&&opt.best&&opt.best.preStart?opt.best.preStart.length:0;
+ let pickupTxt=(allowed>available)?` IP room qualifies for up to ${allowed} Sunday SP, but only ${available} Sunday SP are currently available on your roster. Extra pickups are optional streamers, not required, and should only be added if they beat the skipped Mon–Sat options.`:` Sunday availability matches the current IP-room bucket.`;
+ let rpTxt=ipToThirds(rp)>0?` Active RP forecast is ${rp} IP / ${apiRpProjectedPts(m)} pts. Before Sunday it affects the entry budget; on Sunday it does not reduce SP eligibility.`:' No active RP innings are projected before Sunday.';
+ return `Live current reality is ${liveUsed} used / ${liveLeft} left. ESPN start reference only is ${offUsed} used / ${offLeft} left. SP-only Sunday forecast is ${used} used / ${left} left. ${pickupTxt} Optimizer target: ${target} of ${available} available Sunday SP. Recommended Mon–Sat plan: start ${startCount}, skip ${skipCount}. ${rpTxt}`;
 }
 function preSunText(list){return (list&&list.length)?list.map(x=>`${x.name} ${x.estimated_ip||''}`).join(', '):'0.0'}
 
@@ -271,6 +304,97 @@ function apiSpOnlyAllowed(m){return Number(apiField(m,'projected_sunday_sp_allow
 function apiWithRpUsed(m){return apiField(m,'projected_ip_used_entering_sunday_with_rp')||apiSpOnlyUsed(m)}
 function apiWithRpLeft(m){return apiField(m,'projected_remaining_entering_sunday_with_rp')||apiSpOnlyLeft(m)}
 function apiWithRpAllowed(m){return Number(apiField(m,'projected_sunday_sp_allowed_with_rp','projected_sunday_sp_allowed')||0)}
+
+function isSundayFromDate(s){let n=normDate(s||todayISO());let p=n.split('-').map(Number);if(p.length<3||!p[0])return false;return new Date(p[0],p[1]-1,p[2],12,0,0).getDay()===0}
+function apiSundayMode(m){let mode=String(firstVal(m&&m.sunday_label_mode,'')).toLowerCase();if(mode==='current')return true;if(mode==='projected')return false;return isSundayFromDate(firstVal(m&&m.strategy_day,todayISO()))}
+function sundayUiCopy(m){let cur=apiSundayMode(m);return {isSunday:cur,eligibilityTitle:firstVal(m&&m.sunday_heading,cur?'Current Sunday SP Eligibility':'Projected Sunday SP Eligibility'),pathTitle:firstVal(m&&m.sunday_path_heading,cur?'Mon–Sat Projection Recap':'Projected Path to Sunday'),roomLabel:firstVal(m&&m.sunday_room_label,cur?'Current Sunday SP room':'Projected Sunday SP room'),rpPolicy:firstVal(m&&m.sunday_rp_policy_note,cur?'On Sunday, projected RP usage does not reduce remaining IP or Sunday SP eligibility.':'Before Sunday, RP projections may affect the estimated IP remaining entering Sunday.')}}
+function esc(v){return String(v===undefined||v===null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderRecapAccordions(){let el=qs('recapAccordionCard');if(!el)return;if(!apiProjected()){el.style.display='none';return}let m=(apiState&&apiState.matchup)||{}, c=sundayUiCopy(m);el.style.display='block';qs('recapCardTitle').textContent=c.pathTitle;qs('weeklyRecapSummary').textContent=c.pathTitle;let recap=m.weekly_projection_recap||{};let curUsed=firstVal(recap.current_ip_used,m.current_ip_used,apiLiveUsed(m));let curLeft=firstVal(recap.current_ip_remaining,m.remaining_ip,apiLiveLeft(m));let spUsed=firstVal(recap.sp_only_used,apiSpOnlyUsed(m));let spLeft=firstVal(recap.sp_only_remaining,apiSpOnlyLeft(m));let spAllow=firstVal(recap.sp_only_allowed,apiSpOnlyAllowed(m));let rpUsed=firstVal(recap.with_rp_used,apiWithRpUsed(m));let rpLeft=firstVal(recap.with_rp_remaining,apiWithRpLeft(m));let rpAllow=firstVal(recap.with_rp_allowed,apiWithRpAllowed(m));let summary=firstVal(recap.summary,c.isSunday?'Sunday is here. These are the current results of the Monday–Saturday projection path, not a future projection.':'This is the projected path to Sunday based on current IP, pending SP, and RP assumptions.');let rpPolicy=firstVal(recap.rp_policy,c.rpPolicy);qs('weeklyRecapBody').innerHTML=`<p>${esc(summary)}</p><div class="recap-grid"><div><span class="k">Current IP</span><span class="v">${esc(curUsed)} / 65.0</span></div><div><span class="k">Current room</span><span class="v">${esc(curLeft)} IP</span></div><div><span class="k">SP-only used</span><span class="v">${esc(spUsed)}</span></div><div><span class="k">SP-only room</span><span class="v">${esc(spLeft)} IP</span></div><div><span class="k">SP eligible</span><span class="v">${esc(spAllow)} SP</span></div><div><span class="k">With RP display</span><span class="v">${esc(rpUsed)} used / ${esc(rpLeft)} left / ${esc(rpAllow)} SP</span></div></div><p class="green"><b>RP policy:</b> ${esc(rpPolicy)}</p>`;let review=m.post_match_optimization_review||{};let avail=!!m.post_match_optimization_review_available;qs('postMatchReviewSummary').textContent=firstVal(review.heading,'Post-Match Optimization Review')+(avail?'':' — available after matchup ends');let fields=Array.isArray(review.fields_to_capture)?review.fields_to_capture:[];qs('postMatchReviewBody').innerHTML=`<p>${esc(firstVal(review.summary,'After the matchup ends, compare projected Sunday entry, actual Sunday usage, final IP used, unused/over-cap IP, and whether SP/RP decisions were optimized.'))}</p>${fields.length?'<ul>'+fields.map(x=>`<li>${esc(String(x).replaceAll('_',' '))}</li>`).join('')+'</ul>':''}`}
+
+function pitcherKey(p){return String(p&&p.name||'').trim().toLowerCase()}
+function pitcherPts(p){return Number(firstVal(p&&p.actualPts,p&&p.estPts,p&&p.matchupPts,0))||0}
+function pitcherIpOuts(p){return ipToThirds(firstVal(p&&p.actualIp,p&&p.estIp,'0.0'))}
+function pitcherPpi(p){let ip=pitcherIpOuts(p);return ip>0?(pitcherPts(p)/(ip/3)):0}
+function activePreSundayRpOuts(){return activeRpRows().filter(r=>futureRow(r)&&!isSunday(r.date)).reduce((a,r)=>a+ipToThirds(firstVal(r.todayIp,r.estIp,'0.0')),0)}
+function activePreSundayRpPts(){return activeRpRows().filter(r=>futureRow(r)&&!isSunday(r.date)).reduce((a,r)=>a+(Number(firstVal(r.actualPts,r.matchupPts,0))||0),0)}
+function spFloorForCount(n){n=Number(n||0);if(n>=5)return ipToThirds('20.5');if(n===4)return ipToThirds('15.5');if(n===3)return ipToThirds('10.5');if(n===2)return ipToThirds('5.5');if(n===1)return ipToThirds('0.5');return 0}
+function bestPreSundayStarts(rows,budget){
+ budget=Math.max(0,Math.floor(Number(budget)||0));
+ let clean=(rows||[]).filter(p=>pitcherIpOuts(p)>0);
+ let dp=Array.from({length:budget+1},()=>({pts:-1e9,used:0,start:[]}));
+ dp[0]={pts:0,used:0,start:[]};
+ for(let p of clean){
+   let ip=pitcherIpOuts(p), pts=pitcherPts(p);
+   for(let b=budget;b>=ip;b--){
+     let prev=dp[b-ip];
+     if(prev.pts<-1e8)continue;
+     let cand={pts:prev.pts+pts,used:prev.used+ip,start:prev.start.concat([p])};
+     let cur=dp[b];
+     if(cand.pts>cur.pts+0.001 || (Math.abs(cand.pts-cur.pts)<0.001 && cand.used>cur.used))dp[b]=cand;
+   }
+ }
+ let best=dp.reduce((a,x)=>{
+   if(x.pts>a.pts+0.001)return x;
+   if(Math.abs(x.pts-a.pts)<0.001 && x.used>a.used)return x;
+   return a;
+ },{pts:0,used:0,start:[]});
+ let set=new Set(best.start.map(pitcherKey));
+ let skip=clean.filter(p=>!set.has(pitcherKey(p)));
+ best.start=[...best.start].sort((a,b)=>pitcherPpi(b)-pitcherPpi(a)||pitcherPts(b)-pitcherPts(a));
+ skip.sort((a,b)=>pitcherPpi(b)-pitcherPpi(a)||pitcherPts(b)-pitcherPts(a));
+ return{start:best.start,skip,used:best.used,pts:best.pts};
+}
+function buildSundayOverageOptimizer(){
+ let current=ipToThirds(qs('currentIp').value), cap=ipToThirds(qs('capIp').value||'65.0');
+ let allFuture=pitchers.filter(p=>futureRow(p)&&String(p.status||'').toLowerCase()!=='postponed');
+ let pre=allFuture.filter(p=>!isSunday(p.date));
+ let sun=allFuture.filter(p=>isSunday(p.date)).sort((a,b)=>pitcherPpi(b)-pitcherPpi(a)||pitcherPts(b)-pitcherPts(a));
+ let preRp=activePreSundayRpOuts(), preRpPts=activePreSundayRpPts();
+ let startAllPre=pre.reduce((a,p)=>a+pitcherIpOuts(p),0), startAllSun=sun.reduce((a,p)=>a+pitcherIpOuts(p),0);
+ let startAllEntry=current+preRp+startAllPre, startAllLeft=cap-startAllEntry, startAllAllowed=allowed(startAllLeft);
+ let maxSunAvailable=Math.min(5,sun.length);
+ let scenarios=[];
+ for(let target=0;target<=maxSunAvailable;target++){
+   let floor=spFloorForCount(target);
+   let maxBefore=cap-floor;
+   let budget=maxBefore-current-preRp;
+   let feasible=budget>=0;
+   let chosen=feasible?bestPreSundayStarts(pre,budget):{start:[],skip:pre,used:0,pts:0};
+   let sunChosen=sun.slice(0,target);
+   let sunPts=sunChosen.reduce((a,p)=>a+pitcherPts(p),0), sunIp=sunChosen.reduce((a,p)=>a+pitcherIpOuts(p),0);
+   let entryUsed=current+preRp+chosen.used;
+   let entryLeft=cap-entryUsed;
+   let finalUsed=entryUsed+sunIp;
+   let over=finalUsed-cap;
+   let score=chosen.pts+sunPts;
+   scenarios.push({target,floor,maxBefore,budget,feasible,preStart:chosen.start,preSkip:chosen.skip,preUsed:chosen.used,prePts:chosen.pts,sunStart:sunChosen,sunPts,sunIp,entryUsed,entryLeft,finalUsed,over,score});
+ }
+ let best=scenarios.filter(x=>x.feasible).sort((a,b)=>b.score-a.score||b.target-a.target||b.over-a.over||b.entryLeft-a.entryLeft)[0]||scenarios[0];
+ let startAllSunUsable=Math.min(maxSunAvailable,startAllAllowed);
+ let startAllSunPts=sun.slice(0,startAllSunUsable).reduce((a,p)=>a+pitcherPts(p),0);
+ let startAllPrePts=pre.reduce((a,p)=>a+pitcherPts(p),0);
+ let startAllTotalPts=startAllPrePts+startAllSunPts;
+ let opportunityGain=(best?best.score:0)-startAllTotalPts;
+ let lostSundayByStartAll=Math.max(0,(best?best.target:0)-startAllAllowed);
+ let startNames=new Set(((best&&best.preStart)||[]).map(pitcherKey));let skipNames=new Set(((best&&best.preSkip)||[]).map(pitcherKey));let lockedNames=new Set(((best&&best.sunStart)||[]).map(pitcherKey));
+ return {current,cap,pre,sun,preRp,preRpPts,startAllPre,startAllSun,startAllEntry,startAllLeft,startAllAllowed,startAllSunUsable,startAllPrePts,startAllSunPts,startAllTotalPts,maxSun:maxSunAvailable,best,scenarios,startNames,skipNames,lockedNames,opportunityGain,lostSundayByStartAll};
+}
+function optimizerActionForPitcher(p){let opt=buildSundayOverageOptimizer(), key=pitcherKey(p);if(!futureRow(p))return{label:'ACTUAL/FINAL',cls:'opt-maybe',why:'already counted or outside window'};if(isSunday(p.date)){if(opt.lockedNames.has(key))return{label:'LOCKED SUN',cls:'opt-locked',why:'best Sunday overage SP'};return{label:'SUN MAYBE',cls:'opt-maybe',why:'only if eligibility expands'}}if(opt.startNames.has(key))return{label:'START',cls:'opt-start',why:'fits optimized Sunday target'};if(opt.skipNames.has(key))return{label:'SKIP',cls:'opt-skip',why:'protects Sunday overage bucket'};return{label:'MAYBE',cls:'opt-maybe',why:'depends on earlier IP'}}
+function optimizerBadgeHtml(p){try{let a=optimizerActionForPitcher(p);return `<span class="opt-badge ${a.cls}" title="${esc(a.why)}">${esc(a.label)}</span><div class="small muted">${esc(a.why)}</div>`}catch(e){return `<span class="badge">${esc((p.plan||'maybe').toUpperCase())}</span>`}}
+function pitcherListHtml(rows,action){if(!rows||!rows.length)return '<li>None</li>';return rows.map(p=>`<li><b>${esc(p.name)}</b> — ${esc(action)} · ${esc(dayLabel(p.date))} · ${thirdsToIp(pitcherIpOuts(p))} IP · ${fmtNum(pitcherPts(p))} pts · ${fmtNum(pitcherPpi(p))} pts/IP</li>`).join('')}
+function renderSundayOptimizer(){let card=qs('sundayOptimizerCard');if(!card)return;let opt;try{opt=buildSundayOverageOptimizer()}catch(e){card.style.display='none';return}card.style.display='block';let b=opt.best||{};let danger=(opt.startAllAllowed<(b.target||0));let top=`<span class="target">Target ${b.target||0} of ${opt.maxSun||0} available Sunday SP${(b.target||0)===1?'':'s'}</span> — Sunday IP room may qualify for more starts, but the optimizer only targets Sunday SPs actually on your roster. Enter Sunday with <b>${thirdsToIp(b.floor||0)}+</b> IP left and use no more than <b>${thirdsToIp(b.maxBefore||0)}</b> before Sunday. Recommended entry: <b>${thirdsToIp(b.entryUsed||0)} used / ${thirdsToIp(b.entryLeft||0)} left</b>.`;
+ qs('sundayOptimizerTop').innerHTML=top;
+ let body=`${danger?`<div class="optimizer-warning"><b>Start-all risk:</b> Starting every probable Mon–Sat SP plus active RP projects to <b>${thirdsToIp(opt.startAllEntry)}</b> used before Sunday, leaving <b>${thirdsToIp(opt.startAllLeft)}</b> and only <b>${opt.startAllAllowed}</b> Sunday SP eligible. That would block <b>${opt.lostSundayByStartAll}</b> recommended Sunday overage start${opt.lostSundayByStartAll===1?'':'s'}.</div>`:`<div class="optimizer-ok"><b>Start-all check:</b> Starting all Mon–Sat SP still preserves the recommended Sunday target.</div>`}
+ <div class="recap-grid"><div><span class="k">Current used</span><span class="v">${thirdsToIp(opt.current)}</span></div><div><span class="k">Available Sunday SP</span><span class="v">${opt.maxSun}</span></div><div><span class="k">Active RP through Sat</span><span class="v">${thirdsToIp(opt.preRp)} / ${fmtNum(opt.preRpPts)} pts</span></div><div><span class="k">Recommended Mon–Sat SP IP</span><span class="v">${thirdsToIp(b.preUsed||0)}</span></div><div><span class="k">Recommended Sunday SP IP</span><span class="v">${thirdsToIp(b.sunIp||0)}</span></div><div><span class="k">Projected final after Sunday</span><span class="v">${thirdsToIp(b.finalUsed||0)}</span></div><div><span class="k">Legal overage target</span><span class="v">${(b.over||0)>=0?'+':''}${thirdsToIp(b.over||0)}</span></div><div><span class="k">Vs start-all point gain</span><span class="v">${fmtNum(opt.opportunityGain)} pts</span></div></div>
+ <p><b>Recommended Mon–Sat starts:</b></p><ul>${pitcherListHtml(b.preStart,'START')}</ul>
+ <p><b>Recommended Mon–Sat skips:</b> these are the pitchers the optimizer would sacrifice to preserve the better Sunday overage target or higher total points.</p><ul>${pitcherListHtml(b.preSkip,'SKIP')}</ul>
+ <p><b>Locked Sunday overage SP:</b></p><ul>${pitcherListHtml(b.sunStart,'LOCKED SUNDAY')}</ul>`;
+ qs('sundayOptimizerBody').innerHTML=body;
+ let rows=opt.scenarios.map(sc=>`<tr><td>${sc.target} SP</td><td class="right">${thirdsToIp(sc.floor)}</td><td class="right">${thirdsToIp(sc.maxBefore)}</td><td class="right">${thirdsToIp(sc.entryUsed)}</td><td class="right">${thirdsToIp(sc.entryLeft)}</td><td class="right">${fmtNum(sc.prePts+sc.sunPts)}</td><td class="right">${(sc.over||0)>=0?'+':''}${thirdsToIp(sc.over)}</td></tr>`).join('');
+ qs('sundayOptimizerScenarioBody').innerHTML=`<p>This compares each Sunday overage bucket using available Sunday SPs only. A 5-SP eligibility bucket does not mean you must pick up two more; it only means the IP room exists. The optimizer chooses the best total-points plan from your actual remaining pitchers.</p><table class="optimizer-table"><thead><tr><th>Target</th><th class="right">Need Left</th><th class="right">Max Pre-Sun Used</th><th class="right">Entry Used</th><th class="right">Entry Left</th><th class="right">SP Pts</th><th class="right">After-Sun Overage</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+
 function apiLiveUsed(m){return apiField(m,'live_strategy_current_ip_used','current_strategy_ip_used','strategy_current_ip_used')||apiField(m,'current_ip_used','currentIp')||'0.0'}
 function apiLiveLeft(m){return apiField(m,'live_strategy_current_remaining_ip','current_strategy_remaining_ip','strategy_current_remaining_ip')||apiField(m,'remaining_ip')||'0.0'}
 function apiOfficialUsed(m){return apiField(m,'official_current_ip_used','current_ip_used','currentIp')||'0.0'}
@@ -540,25 +664,29 @@ function calc(reason){let t=totals();let m=(apiState&&apiState.matchup)||{};let 
  qs('sunAllowed').textContent=allowedVal+' SP';
  if(useApi){
    let preList=m.pre_sunday_sp_projected||m.pending_before_sunday||[];
-   let preRpText=apiRpProjected(m), preRpPts=apiRpProjectedPts(m);let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowedSp=apiSpOnlyAllowed(m);let usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowedRp=apiWithRpAllowed(m);
-   allowedVal=allowedSp;cls=recommendationClass(allowedVal);qs('sunAllowed').textContent=allowedVal+' SP';
+   let preRpText=apiRpProjected(m), preRpPts=apiRpProjectedPts(m);let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowedSp=apiSpOnlyAllowed(m);let usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowedRp=apiWithRpAllowed(m);let copy=sundayUiCopy(m);
+   qs('sundayEligibilityTitle').textContent=copy.eligibilityTitle;qs('pathTitle').textContent=copy.pathTitle;qs('preSunSpLabel').textContent=copy.isSunday?'Mon–Sat SP result':'Pre-Sunday SP projected';qs('preSunRpLabel').innerHTML=copy.isSunday?'Sunday RP projection <span class="muted small">(informational only)</span>':'Projected RP before Sunday <span class="muted small">(IP / Pts)</span>';qs('sunUsedLabel').textContent=copy.isSunday?'Current Sunday IP used':'Sunday morning projected IP used';qs('sunLeftLabel').textContent=copy.isSunday?'Current Sunday IP left':'Sunday morning projected IP left';qs('finalTotalLabel').textContent=copy.isSunday?'Current Sunday IP used':'Projected Sunday morning IP used';qs('overUnderLabel').textContent=copy.isSunday?'Current Sunday cushion':'Projected Sunday morning cushion';
+   let optNow=null;try{optNow=buildSundayOverageOptimizer()}catch(e){};
+   let availableSun=optNow?optNow.maxSun:Number(m.sunday_sp_on_roster_count||0);
+   let optimizerTarget=(optNow&&optNow.best)?optNow.best.target:Math.min(allowedSp,availableSun||allowedSp);
+   allowedVal=allowedSp;cls=recommendationClass(optimizerTarget||allowedVal);qs('sunAllowed').textContent=optimizerTarget+' SP target';
    qs('preSunSp').textContent=preSunText(preList);qs('preSunRp').textContent=rpIpPtsText(preRpText,preRpPts);
    qs('sunUsed').textContent=usedSp;qs('sunLeft').textContent=leftSp;
    qs('sunNames').textContent=apiPickupsText();qs('finalTotal').textContent=usedSp;
    let floor=spFloorForAllowed(allowedVal);let cushion=ipToThirds(leftSp)-ipToThirds(floor);qs('overUnder').innerHTML=`<span class="${cushion>=0?'green':'red'}">${cushion>=0?'+':''}${thirdsToIp(cushion)} vs ${allowedVal}-SP floor</span>`;
-   qs('thresholdMsg').innerHTML=`Live current: <span>${currentText}</span> used / <span>${remainText}</span> left. SP-only Sunday forecast: <span class="${cls}">${leftSp}</span> left. With active RP: <span>${leftRp}</span> left / <b>${allowedRp} SP</b>. ESPN start ref only: <span>${officialLeft}</span> left.`;
-   qs('mainRec').className='rec '+(allowedRp<allowedVal?'orange':cls);qs('mainRec').textContent=allowedRp<allowedVal?`${ordinal(allowedVal)}-SP risk: RP projection drops to ${allowedRp} SP`:`Projected Sunday with RP: ${allowedRp} SP eligible`;
+   qs('thresholdMsg').innerHTML=copy.isSunday?`Current: <span>${currentText}</span> used / <span>${remainText}</span> left. ${copy.roomLabel}: <span class="${cls}">${leftSp}</span> left. IP room qualifies for <b>${allowedVal} SP</b>, but optimizer targets <b>${optimizerTarget}</b> of <b>${availableSun}</b> available Sunday SP. ${copy.rpPolicy} ESPN start ref: <span>${officialLeft}</span> left.`:`Live current: <span>${currentText}</span> used / <span>${remainText}</span> left. SP-only Sunday forecast: <span class="${cls}">${leftSp}</span> left. IP room qualifies for <b>${allowedVal} SP</b>; optimizer targets <b>${optimizerTarget}</b> of <b>${availableSun}</b> available Sunday SP. With active RP: <span>${leftRp}</span> left / <b>${allowedRp} SP</b>. ESPN start ref only: <span>${officialLeft}</span> left.`;
+   qs('mainRec').className='rec '+(copy.isSunday?cls:(allowedRp<allowedVal?'orange':cls));qs('mainRec').textContent=copy.isSunday?`Current Sunday target: ${optimizerTarget} of ${availableSun} SP`:(allowedRp<optimizerTarget?`${ordinal(optimizerTarget)}-SP target at risk: RP projection drops to ${allowedRp} SP`:`Optimized Sunday target: ${optimizerTarget} of ${availableSun} SP`);
    qs('mainWhy').textContent=apiStrategySummary(m);
    qs('dayAdvice').innerHTML=dayAdvice(t);
-   let pickups=Number(m.suggested_sunday_pickups||0);let pickupMsg=pickups>0?`<p class="blue"><b>Pickup watch:</b> Projection allows ${allowedVal} Sunday SP, but only ${m.sunday_sp_on_roster_count||0} Sunday SP are listed. Look for ${pickups} extra Sunday starter if matchup quality is good.</p>`:`<p class="green"><b>Pickup watch:</b> Current Sunday starters match the SP-only eligibility. No extra pickup is required unless improving matchup quality.</p>`;
-   let rpMsg=ipToThirds(preRpText)>0?`<p class="${allowedRp<allowedVal?'orange':'green'}"><b>RP risk:</b> Active RP projection before Sunday is ${preRpText} IP / ${preRpPts} pts. With RP, Sunday projects to ${usedRp} used / ${leftRp} left, ${allowedRp} SP eligible.</p>`:'';
-   qs('wiggle').innerHTML=`SP-only Sunday forecast room: <b class="${cls}">${leftSp}</b>. ${rpMsg}${pickupMsg}`;renderTradeoff();
+   let pickups=Math.max(0,allowedVal-availableSun);let pickupMsg=pickups>0?`<p class="blue"><b>Pickup watch:</b> IP room could support ${allowedVal} Sunday SP, but optimizer currently targets ${optimizerTarget} of ${availableSun} rostered Sunday SP. Extra pickups are optional only if the streamer is better than a Mon–Sat start you would otherwise use.</p>`:`<p class="green"><b>Pickup watch:</b> Current Sunday starters match the optimizer target. No extra pickup is required unless improving matchup quality.</p>`;
+   let rpMsg=copy.isSunday?(ipToThirds(preRpText)>0?`<p class="green"><b>RP note:</b> ${preRpText} projected RP IP / ${preRpPts} pts is informational only today and does not reduce Sunday SP eligibility.</p>`:''):(ipToThirds(preRpText)>0?`<p class="${allowedRp<allowedVal?'orange':'green'}"><b>RP risk:</b> Active RP projection before Sunday is ${preRpText} IP / ${preRpPts} pts. With RP, Sunday projects to ${usedRp} used / ${leftRp} left, ${allowedRp} SP eligible.</p>`:'');
+   qs('wiggle').innerHTML=`${copy.roomLabel}: <b class="${cls}">${leftSp}</b>. ${rpMsg}${pickupMsg}`;renderTradeoff();
  }else{
    qs('preSunSp').textContent=thirdsToIp(t.preSp);qs('preSunRp').textContent=thirdsToIp(t.preRp);qs('sunUsed').textContent=thirdsToIp(t.used);qs('sunLeft').textContent=thirdsToIp(t.sunLeft);qs('sunNames').textContent=t.sun.join(', ')||'none';qs('finalTotal').textContent=thirdsToIp(t.final);let over=t.final-t.cap;qs('overUnder').innerHTML=`<span class="${over>=0?'green':'yellow'}">${over>=0?'+':''}${thirdsToIp(over)}</span>`;qs('mainRec').className='rec '+cls;qs('mainRec').textContent=allowedVal+' SP eligible';qs('mainWhy').textContent=adviceText(t);qs('thresholdMsg').innerHTML=`Projected Sunday left: <span class="${cls}">${thirdsToIp(t.sunLeft)}</span>`;let rpRoom=t.cap-ipToThirds('5.5')-t.current-t.preSp;qs('wiggle').innerHTML=`You can spend about <b class="${rpRoom>=0?'green':'red'}">${thirdsToIp(rpRoom)}</b> more pre-Sunday RP innings and still keep 5.5 IP left for two Sunday SP. Current active RP projection: <b>${thirdsToIp(t.preRp)}</b>.`;qs('dayAdvice').innerHTML=dayAdvice(t);renderTradeoff();
  }
- renderTradeoff();renderDashboardWarning();qs('windowInfo').textContent=`Window ${qs('matchupStart').value} through ${qs('matchupEnd').value}. Final rows are actuals.${hasManualWindow()?' Local rollover window is locked; stale API dates will not overwrite it.':''}`;updateRpSummary();saveOnly()}
+ renderTradeoff();renderDashboardWarning();renderRecapAccordions();renderSundayOptimizer();qs('windowInfo').textContent=`Window ${qs('matchupStart').value} through ${qs('matchupEnd').value}. Final rows are actuals.${hasManualWindow()?' Local rollover window is locked; stale API dates will not overwrite it.':''}`;updateRpSummary();saveOnly()}
 function adviceText(t){if(t.sunLeft>=ipToThirds('5.5')&&t.sunLeft<ipToThirds('10.5'))return 'Protect this range. It keeps Schlittler + Soroka available Sunday and lets them push past 65.';if(t.sunLeft>=ipToThirds('10.5'))return 'You still have enough room for 3 Sunday SP. Keep tracking active RP innings and Saturday SP results.';if(t.sunLeft>=ipToThirds('0.5'))return 'You are below the two-SP threshold. Use only the best Sunday SP unless you regain room from stat corrections.';return 'You are projected to lose the Sunday overage start ability.'}
-function dayAdvice(t){if(apiProjected()){let m=apiState.matchup, pre=m.pre_sunday_sp_projected||m.pending_before_sunday||[], sun=m.sunday_sp_on_roster||[];let preTxt=pre.length?pre.map(x=>`${x.name} (${x.estimated_ip} IP on ${x.date})`).join(', '):'No more pre-Sunday SP projected';let sunTxt=sun.length?sun.map(x=>`${x.name} (${x.estimated_ip} IP)`).join(', '):'No Sunday SP listed';let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowSp=apiSpOnlyAllowed(m), rp=apiRpProjected(m), rpPts=apiRpProjectedPts(m), usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowRp=apiWithRpAllowed(m);let html=`<p><b>Current status:</b> ${apiRealityNote(m)} SP-only Sunday morning is ${usedSp} used / ${leftSp} left.</p><p><b>Saturday:</b> ${preTxt}.</p><p><b>Sunday:</b> Start ${sunTxt}. SP-only eligibility is <b>${allowSp} SP</b>.</p>`;if(ipToThirds(rp)>0){html+=`<p class="${allowRp<allowSp?'orange':'green'}"><b>Active RP risk:</b> ${rp} projected RP IP / ${rpPts} projected RP pts before Sunday changes the projection to ${usedRp} used / ${leftRp} left, which is <b>${allowRp} SP</b>.</p>`}if(allowRp<allowSp)html+=`<p class="orange"><b>Action:</b> To protect ${allowSp}-SP Sunday, bench or limit active RP before they pitch.</p>`;else html+=`<p class="green"><b>Action:</b> No extra Sunday pickup required by current projection. Keep tracking active RP innings.</p>`;return html}
+function dayAdvice(t){if(apiProjected()){let m=apiState.matchup, c=sundayUiCopy(m), pre=m.pre_sunday_sp_projected||m.pending_before_sunday||[], sun=m.sunday_sp_on_roster||[];let preTxt=pre.length?pre.map(x=>`${x.name} (${x.estimated_ip} IP on ${x.date})`).join(', '):'No more pre-Sunday SP projected';let sunTxt=sun.length?sun.map(x=>`${x.name} (${x.estimated_ip} IP)`).join(', '):'No Sunday SP listed';let usedSp=apiSpOnlyUsed(m), leftSp=apiSpOnlyLeft(m), allowSp=apiSpOnlyAllowed(m), rp=apiRpProjected(m), rpPts=apiRpProjectedPts(m), usedRp=apiWithRpUsed(m), leftRp=apiWithRpLeft(m), allowRp=apiWithRpAllowed(m);let html=c.isSunday?`<p><b>Current Sunday status:</b> ${apiRealityNote(m)} ${usedSp} used / ${leftSp} left.</p><p><b>Mon–Sat recap:</b> ${preTxt}.</p><p><b>Sunday:</b> Start ${sunTxt}. Current SP eligibility is <b>${allowSp} SP</b>.</p>`:`<p><b>Current status:</b> ${apiRealityNote(m)} SP-only Sunday morning is ${usedSp} used / ${leftSp} left.</p><p><b>Saturday:</b> ${preTxt}.</p><p><b>Sunday:</b> Start ${sunTxt}. SP-only eligibility is <b>${allowSp} SP</b>.</p>`;if(ipToThirds(rp)>0){html+=c.isSunday?`<p class="green"><b>RP note:</b> ${rp} projected RP IP / ${rpPts} projected RP pts is informational only today and does not reduce Sunday SP eligibility.</p>`:`<p class="${allowRp<allowSp?'orange':'green'}"><b>Active RP risk:</b> ${rp} projected RP IP / ${rpPts} projected RP pts before Sunday changes the projection to ${usedRp} used / ${leftRp} left, which is <b>${allowRp} SP</b>.</p>`}if(!c.isSunday&&allowRp<allowSp)html+=`<p class="orange"><b>Action:</b> To protect ${allowSp}-SP Sunday, bench or limit active RP before they pitch.</p>`;else html+=`<p class="green"><b>Action:</b> No extra Sunday pickup required by current ${c.isSunday?'Sunday state':'projection'}. Keep tracking active RP innings.</p>`;return html}
  let out='<p><b>Current matchup strategy:</b> Use final results as actuals. Start remaining pre-Sunday SP only if still scheduled. Sunday: use available SP based on projected IP left.</p>';if(t.sunLeft<ipToThirds('5.5'))out+='<p class="orange"><b>Action:</b> remove active RP before they pitch and do not add more pre-Sunday SP.</p>';else if(t.sunLeft<ipToThirds('10.5'))out+='<p class="green"><b>Action:</b> 2-SP zone. Keep both Sunday SP ready. Do not let RP burn below 5.5 IP left.</p>';else out+='<p class="blue"><b>Action:</b> safe zone. Consider extra Sunday SP only if eligibility exceeds rostered Sunday starters.</p>';return out}
 function autoFillDates(){let s=qs('matchupStart').value;pitchers.forEach(p=>{p.date=p.name.includes('Schlittler')||p.name.includes('Soroka')?addDays(s,6):(p.name.includes('Joe Ryan')?addDays(s,5):addDays(s,4))});relievers.forEach(r=>r.date=addDays(s,4));saveCalc('auto-filled dates')}
 function nextMatchup(auto=false){
